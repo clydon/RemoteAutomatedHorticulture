@@ -5,12 +5,16 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.craftapps.remotehorticulture.app.R;
 import com.craftapps.remotehorticulture.app.widgets.VerticalSeekBar;
@@ -26,6 +30,12 @@ import java.text.SimpleDateFormat;
 public class TemperatureFragment extends Fragment {
 
     public TemperatureFragment() {
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
     }
 
     @Override
@@ -62,9 +72,9 @@ public class TemperatureFragment extends Fragment {
         button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 // Perform action on click
-                ParseObject gameScore = new ParseObject("Temperature");
-                gameScore.put("Temperature", Integer.parseInt(String.valueOf(verticalSeekBar.getProgress())));
-                gameScore.saveInBackground(new SaveCallback() {
+                ParseObject temperature = new ParseObject("Temperature");
+                temperature.put("Temperature", Float.parseFloat(String.valueOf(verticalSeekBar.getProgress())));
+                temperature.saveInBackground(new SaveCallback() {
                     public void done(ParseException e) {
                         if (e == null) {
                             editText.setText("");
@@ -85,7 +95,7 @@ public class TemperatureFragment extends Fragment {
                         if (object == null) {
                             Log.d("Temperature", "The getFirst request failed.");
                         } else {
-                            textView2.setText((String.valueOf(object.getInt("Temperature"))));
+                            textView2.setText((String.valueOf(object.getNumber("Temperature"))));
                         }
                     }
                 });
@@ -109,5 +119,35 @@ public class TemperatureFragment extends Fragment {
 
         return rootView;
     }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        menu.clear();
+
+        inflater.inflate(R.menu.main, menu);
+
+        MenuItem mTemperatureMenuItem = menu.findItem(R.id.action_temperature);
+        MenuItem mHumidityMenuItem = menu.findItem(R.id.action_humidity);
+        MenuItem mLightingMenuItem = menu.findItem(R.id.action_lighting);
+        MenuItem mWaterMenuItem = menu.findItem(R.id.action_water);
+
+        mTemperatureMenuItem.setVisible(true);
+        mHumidityMenuItem.setVisible(false);
+        mLightingMenuItem.setVisible(false);
+        mWaterMenuItem.setVisible(false);
+
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == R.id.action_temperature) {
+            Toast.makeText(getActivity(), "Temperature action.", Toast.LENGTH_SHORT).show();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
 
 }

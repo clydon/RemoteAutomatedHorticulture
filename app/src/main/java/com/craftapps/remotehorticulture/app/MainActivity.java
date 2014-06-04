@@ -22,15 +22,14 @@ import android.widget.TextView;
 public class MainActivity extends ActionBarActivity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks {
 
-    /**
-     * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
-     */
     private NavigationDrawerFragment mNavigationDrawerFragment;
-
-    /**
-     * Used to store the last screen title. For use in {@link #restoreActionBar()}.
-     */
     private CharSequence mTitle;
+
+    private MenuItem mTemperatureMenuItem;
+    private MenuItem mHumidityMenuItem;
+    private MenuItem mLightingMenuItem;
+    private MenuItem mWaterMenuItem;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -98,6 +97,17 @@ public class MainActivity extends ActionBarActivity
             // if the drawer is not showing. Otherwise, let the drawer
             // decide what to show in the action bar.
             getMenuInflater().inflate(R.menu.main, menu);
+
+            mTemperatureMenuItem = menu.findItem(R.id.action_temperature);
+            mHumidityMenuItem = menu.findItem(R.id.action_humidity);
+            mLightingMenuItem = menu.findItem(R.id.action_lighting);
+            mWaterMenuItem = menu.findItem(R.id.action_water);
+
+            mTemperatureMenuItem.setVisible(false);
+            mHumidityMenuItem.setVisible(false);
+            mLightingMenuItem.setVisible(false);
+            mWaterMenuItem.setVisible(false);
+
             restoreActionBar();
             return true;
         }

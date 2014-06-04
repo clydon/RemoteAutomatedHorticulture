@@ -1,5 +1,6 @@
 package com.craftapps.remotehorticulture.app.Fragments;
 
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.graphics.Color;
 import android.graphics.LinearGradient;
@@ -10,8 +11,12 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.androidplot.Plot;
 import com.androidplot.xy.BoundaryMode;
@@ -35,9 +40,44 @@ public class OverviewFragment extends Fragment {
     View rootView;
     private XYPlot plot;
     ProgressDialog progressDialog;
-    final List<Integer> parseSeries = new ArrayList<Integer>();
+    final List<Double> parseSeries = new ArrayList<Double>();
 
     public OverviewFragment() {
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        menu.clear();
+
+        inflater.inflate(R.menu.main, menu);
+
+        MenuItem mTemperatureMenuItem = menu.findItem(R.id.action_temperature);
+        MenuItem mHumidityMenuItem = menu.findItem(R.id.action_humidity);
+        MenuItem mLightingMenuItem = menu.findItem(R.id.action_lighting);
+        MenuItem mWaterMenuItem = menu.findItem(R.id.action_water);
+
+        mTemperatureMenuItem.setVisible(false);
+        mHumidityMenuItem.setVisible(false);
+        mLightingMenuItem.setVisible(false);
+        mWaterMenuItem.setVisible(false);
+
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == R.id.action_temperature) {
+            Toast.makeText(getActivity(), "Temperature action.", Toast.LENGTH_SHORT).show();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -53,7 +93,7 @@ public class OverviewFragment extends Fragment {
 
     //--------------------------------------- ASYNC TASK ----------------------------------------------
     private class getItemLists extends
-            AsyncTask<Void, String, List<Integer>> {
+            AsyncTask<Void, String, List<Double>> {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
@@ -68,15 +108,15 @@ public class OverviewFragment extends Fragment {
         }
 
         @Override
-        protected List<Integer> doInBackground(final Void... params) {
+        protected List<Double> doInBackground(final Void... params) {
             ParseQuery<ParseObject> query = ParseQuery.getQuery("Temperature");
             query.orderByAscending("updatedAt");
             query.findInBackground(new FindCallback<ParseObject>() {
                 public void done(List<ParseObject> tempList, ParseException e) {
                     if (e == null) {
                         for (ParseObject temp : tempList) {
-                            Log.i("query", "= " + temp.getInt("Temperature"));
-                            parseSeries.add(temp.getInt("Temperature"));
+                            Log.i("query", "= " + temp.getNumber("Temperature"));
+                            parseSeries.add(temp.getDouble("Temperature"));
                         }
                         setupGraph();
                     } else {
@@ -92,7 +132,7 @@ public class OverviewFragment extends Fragment {
         }
 
         @Override
-        protected void onPostExecute(List<Integer> result) {
+        protected void onPostExecute(List<Double> result) {
             super.onPostExecute(result);
             progressDialog.dismiss();
             plot.setVisibility(View.VISIBLE);

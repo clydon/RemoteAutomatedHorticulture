@@ -2,9 +2,27 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="com.craftapps.remotehorticulture.app.MainActivity" >
-    <item android:id="@+id/action_example"
-        android:title="@string/action_example"
+
+    <item android:id="@+id/action_temperature"
+        android:title="Temperature Action"
+        android:orderInCategory="100"
         app:showAsAction="withText|ifRoom" />
+
+    <item android:id="@+id/action_humidity"
+        android:title="Humidity Action"
+        android:orderInCategory="100"
+        app:showAsAction="withText|ifRoom" />
+
+    <item android:id="@+id/action_lighting"
+        android:title="Lighting Action"
+        android:orderInCategory="100"
+        app:showAsAction="withText|ifRoom" />
+
+    <item android:id="@+id/action_water"
+        android:title="Water Action"
+        android:orderInCategory="100"
+        app:showAsAction="withText|ifRoom" />
+
     <item android:id="@+id/action_settings"
         android:title="@string/action_settings"
         android:orderInCategory="100"

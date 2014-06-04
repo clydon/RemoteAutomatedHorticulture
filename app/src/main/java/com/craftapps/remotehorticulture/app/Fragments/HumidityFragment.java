@@ -4,10 +4,14 @@ package com.craftapps.remotehorticulture.app.Fragments;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.craftapps.remotehorticulture.app.R;
 import com.craftapps.remotehorticulture.app.widgets.VerticalSeekBar;
@@ -15,6 +19,12 @@ import com.craftapps.remotehorticulture.app.widgets.VerticalSeekBar;
 public class HumidityFragment extends Fragment {
 
     public HumidityFragment() {
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
     }
 
     @Override
@@ -45,6 +55,35 @@ public class HumidityFragment extends Fragment {
         });
 
         return rootView;
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        menu.clear();
+
+        inflater.inflate(R.menu.main, menu);
+
+        MenuItem mTemperatureMenuItem = menu.findItem(R.id.action_temperature);
+        MenuItem mHumidityMenuItem = menu.findItem(R.id.action_humidity);
+        MenuItem mLightingMenuItem = menu.findItem(R.id.action_lighting);
+        MenuItem mWaterMenuItem = menu.findItem(R.id.action_water);
+
+        mTemperatureMenuItem.setVisible(false);
+        mHumidityMenuItem.setVisible(true);
+        mLightingMenuItem.setVisible(false);
+        mWaterMenuItem.setVisible(false);
+
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == R.id.action_humidity) {
+            Toast.makeText(getActivity(), "Humidity action.", Toast.LENGTH_SHORT).show();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
 }
