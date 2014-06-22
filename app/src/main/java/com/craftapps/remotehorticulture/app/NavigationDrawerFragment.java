@@ -21,7 +21,6 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import com.craftapps.remotehorticulture.app.Fragments.HumidityFragment;
 import com.craftapps.remotehorticulture.app.Fragments.LightingFragment;
@@ -31,11 +30,6 @@ import com.craftapps.remotehorticulture.app.Fragments.ScheduleFragment;
 import com.craftapps.remotehorticulture.app.Fragments.TemperatureFragment;
 import com.craftapps.remotehorticulture.app.Fragments.WaterFragment;
 
-/**
- * Fragment used for managing interactions for and presentation of a navigation drawer.
- * See the <a href="https://developer.android.com/design/patterns/navigation-drawer.html#Interaction">
- * design guidelines</a> for a complete explanation of the behaviors implemented here.
- */
 public class NavigationDrawerFragment extends Fragment {
 
     /**

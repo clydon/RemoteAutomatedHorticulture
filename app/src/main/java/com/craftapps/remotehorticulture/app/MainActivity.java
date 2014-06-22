@@ -5,18 +5,13 @@ import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBar;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.content.Context;
-import android.os.Build;
 import android.os.Bundle;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.support.v4.widget.DrawerLayout;
-import android.widget.ArrayAdapter;
-import android.widget.TextView;
 
 
 public class MainActivity extends ActionBarActivity
@@ -24,11 +19,6 @@ public class MainActivity extends ActionBarActivity
 
     private NavigationDrawerFragment mNavigationDrawerFragment;
     private CharSequence mTitle;
-
-    private MenuItem mTemperatureMenuItem;
-    private MenuItem mHumidityMenuItem;
-    private MenuItem mLightingMenuItem;
-    private MenuItem mWaterMenuItem;
 
 
     @Override
@@ -40,7 +30,6 @@ public class MainActivity extends ActionBarActivity
                 getSupportFragmentManager().findFragmentById(R.id.navigation_drawer);
         mTitle = getTitle();
 
-        // Set up the drawer.
         mNavigationDrawerFragment.setUp(
                 R.id.navigation_drawer,
                 (DrawerLayout) findViewById(R.id.drawer_layout));
@@ -78,7 +67,6 @@ public class MainActivity extends ActionBarActivity
             case 7:
                 mTitle = getString(R.string.title_section7);
                 break;
-
         }
     }
 
@@ -89,7 +77,6 @@ public class MainActivity extends ActionBarActivity
         actionBar.setTitle(mTitle);
     }
 
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         if (!mNavigationDrawerFragment.isDrawerOpen()) {
@@ -98,15 +85,17 @@ public class MainActivity extends ActionBarActivity
             // decide what to show in the action bar.
             getMenuInflater().inflate(R.menu.main, menu);
 
-            mTemperatureMenuItem = menu.findItem(R.id.action_temperature);
-            mHumidityMenuItem = menu.findItem(R.id.action_humidity);
-            mLightingMenuItem = menu.findItem(R.id.action_lighting);
-            mWaterMenuItem = menu.findItem(R.id.action_water);
+            MenuItem mTemperatureMenuItem = menu.findItem(R.id.action_temperature);
+            MenuItem mHumidityMenuItem = menu.findItem(R.id.action_humidity);
+            MenuItem mLightingMenuItem = menu.findItem(R.id.action_lighting);
+            MenuItem mWaterMenuItem = menu.findItem(R.id.action_water);
+            MenuItem mRefreshMenuItem = menu.findItem(R.id.action_refresh);
 
-            mTemperatureMenuItem.setVisible(false);
-            mHumidityMenuItem.setVisible(false);
-            mLightingMenuItem.setVisible(false);
-            mWaterMenuItem.setVisible(false);
+            if (mTemperatureMenuItem != null) mTemperatureMenuItem.setVisible(false);
+            if (mHumidityMenuItem != null) mHumidityMenuItem.setVisible(false);
+            if (mLightingMenuItem != null) mLightingMenuItem.setVisible(false);
+            if (mWaterMenuItem != null) mWaterMenuItem.setVisible(false);
+            if (mRefreshMenuItem != null) mRefreshMenuItem.setVisible(false);
 
             restoreActionBar();
             return true;
@@ -114,17 +103,11 @@ public class MainActivity extends ActionBarActivity
         return super.onCreateOptionsMenu(menu);
     }
 
-    @Override
+    /*@Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-        if (id == R.id.action_settings) {
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
+        return id == R.id.action_refresh || super.onOptionsItemSelected(item);
+    }*/
 
     /**
      * A placeholder fragment containing a simple view.
@@ -154,8 +137,7 @@ public class MainActivity extends ActionBarActivity
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                 Bundle savedInstanceState) {
-            View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-            return rootView;
+            return inflater.inflate(R.layout.fragment_main, container, false);
         }
 
         @Override

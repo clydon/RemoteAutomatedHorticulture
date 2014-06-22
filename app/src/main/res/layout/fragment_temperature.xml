@@ -3,77 +3,126 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent" android:layout_height="match_parent">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Temperature Fragment"
-        android:id="@+id/textView"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true" />
     <com.craftapps.remotehorticulture.app.widgets.VerticalSeekBar
         android:layout_width="wrap_content"
         android:layout_height="200dp"
-        android:layout_below="@+id/textView"
         android:layout_marginLeft="25dp"
         android:layout_centerHorizontal="false"
-        android:max="100"
+        android:max="120"
         android:id="@+id/verticalSeekBar"
-        android:progress="50" />
-
-    <EditText
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/editText"
-        android:layout_alignStart="@+id/textView"
-        android:layout_alignEnd="@+id/textView"
-        android:layout_below="@+id/textView"
-        android:layout_centerHorizontal="true"
-        android:gravity="center"
-        android:enabled="true" />
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Submit Temp"
-        android:id="@+id/button"
-        android:layout_alignStart="@+id/editText"
-        android:layout_alignEnd="@+id/editText"
-        android:layout_below="@+id/editText"
-        android:layout_centerHorizontal="true" />
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Latest Temperature"
-        android:id="@+id/button2"
-        android:layout_alignStart="@+id/button"
-        android:layout_alignEnd="@+id/button"
-        android:layout_below="@+id/button"
-        android:layout_centerHorizontal="true" />
+        android:progress="50"
+        android:thumb="@android:color/transparent"
+        android:layout_alignBottom="@+id/textView_latestTemp" />
 
     <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="250dp"
+        android:layout_height="200dp"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="Last Temp"
-        android:id="@+id/textView2"
-        android:layout_below="@+id/button2"
-        android:layout_alignRight="@+id/textView3"
-        android:layout_alignEnd="@+id/textView3"
-        android:layout_alignLeft="@+id/textView3"
-        android:layout_alignStart="@+id/textView3"
-        android:gravity="center" />
+        android:text="-0.00 F"
+        android:id="@+id/textView_latestTemp"
+        android:gravity="center"
+        android:textSize="55dp"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:layout_toRightOf="@+id/verticalSeekBar"
+        android:paddingTop="30dp"
+        android:typeface="serif" />
 
     <TextView
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="50dp"
         android:textAppearance="?android:attr/textAppearanceSmall"
         android:text="Date"
-        android:id="@+id/textView3"
-        android:layout_below="@+id/textView2"
-        android:layout_alignLeft="@+id/button2"
-        android:layout_alignStart="@+id/button2"
-        android:layout_alignRight="@+id/button2"
-        android:layout_alignEnd="@+id/button2"
-        android:gravity="center" />
+        android:id="@+id/textView_latestDate"
+        android:gravity="center"
+        android:typeface="serif"
+        android:layout_above="@+id/textView_minTempLabel"
+        android:layout_alignLeft="@+id/textView_latestTemp"
+        android:layout_alignStart="@+id/textView_latestTemp"
+        android:layout_alignRight="@+id/textView_latestTemp"
+        android:layout_alignEnd="@+id/textView_latestTemp" />
+    
+    <com.androidplot.xy.XYPlot
+        android:id="@+id/mySimpleXYPlot"
+        android:layout_width="fill_parent"
+        android:layout_height="250dp"
+        androidPlot.title="Temperature"
+        androidPlot.domainLabel="Domain"
+        androidPlot.rangeLabel="Range"
+        androidPlot.titleWidget.labelPaint.textSize="@dimen/title_font_size"
+        androidPlot.domainLabelWidget.labelPaint.textSize="@dimen/domain_label_font_size"
+        androidPlot.rangeLabelWidget.labelPaint.textSize="@dimen/range_label_font_size"
+        androidPlot.graphWidget.marginTop="20dp"
+        androidPlot.graphWidget.marginLeft="15dp"
+        androidPlot.graphWidget.marginBottom="25dp"
+        androidPlot.graphWidget.marginRight="10dp"
+        androidPlot.graphWidget.rangeLabelPaint.textSize="@dimen/range_tick_label_font_size"
+        androidPlot.graphWidget.rangeOriginLabelPaint.textSize="@dimen/range_tick_label_font_size"
+        androidPlot.graphWidget.domainLabelPaint.textSize="@dimen/domain_tick_label_font_size"
+        androidPlot.graphWidget.domainOriginLabelPaint.textSize="@dimen/domain_tick_label_font_size"
+        androidPlot.legendWidget.textPaint.textSize="@dimen/legend_text_font_size"
+        androidPlot.legendWidget.iconSizeMetrics.heightMetric.value="15dp"
+        androidPlot.legendWidget.iconSizeMetrics.widthMetric.value="15dp"
+        androidPlot.legendWidget.heightMetric.value="25dp"
+        androidPlot.legendWidget.positionMetrics.anchor="right_bottom"
+        androidPlot.graphWidget.gridLinePaint.color="#000000"
+        android:layout_below="@+id/textView_minTemp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="Min Temp:"
+        android:id="@+id/textView_minTempLabel"
+        android:padding="16dp"
+        android:typeface="serif"
+        android:layout_below="@+id/textView_latestTemp"
+        android:layout_alignLeft="@+id/textView_latestDate"
+        android:layout_alignStart="@+id/textView_latestDate" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="Max Temp:"
+        android:id="@+id/textView_maxTempLabel"
+        android:padding="16dp"
+        android:typeface="serif"
+        android:layout_alignTop="@+id/textView_minTempLabel"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="-0.00 F"
+        android:id="@+id/textView_minTemp"
+        android:typeface="serif"
+        android:layout_alignTop="@+id/textView_maxTemp"
+        android:layout_toRightOf="@+id/verticalSeekBar"
+        android:layout_alignRight="@+id/textView_minTempLabel"
+        android:layout_alignEnd="@+id/textView_minTempLabel"
+        android:gravity="center_horizontal|top"
+        android:paddingBottom="50dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="-0.00 F"
+        android:id="@+id/textView_maxTemp"
+        android:gravity="center_horizontal|top"
+        android:typeface="serif"
+        android:layout_below="@+id/textView_maxTempLabel"
+        android:layout_alignRight="@+id/textView_latestDate"
+        android:layout_alignEnd="@+id/textView_latestDate"
+        android:layout_alignLeft="@+id/textView_maxTempLabel"
+        android:layout_alignStart="@+id/textView_maxTempLabel"
+        android:paddingBottom="50dp" />
+
+
 </RelativeLayout>

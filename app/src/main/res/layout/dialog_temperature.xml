@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="Setup Alerts:"
+        android:id="@+id/textView2"
+        android:padding="16dp"
+        android:typeface="serif"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true" />
+
+    <EditText
+        android:layout_width="150dp"
+        android:layout_height="wrap_content"
+        android:inputType="none"
+        android:textSize="30dp"
+        android:ems="10"
+        android:textColor="#3366FF"
+        android:text="-0.00° F"
+        android:typeface="serif"
+        android:id="@+id/editTextMin"
+        android:gravity="center"
+        android:singleLine="true"
+        android:editable="false"
+        android:enabled="false"
+        android:focusable="true"
+        android:layout_below="@+id/textViewCurrent"
+        android:layout_toRightOf="@+id/seekBar_min" />
+
+    <com.craftapps.remotehorticulture.app.widgets.VerticalSeekBar
+        android:layout_width="wrap_content"
+        android:layout_height="200dp"
+        android:max="120"
+        android:id="@+id/seekBar_min"
+        android:progress="50"
+        android:layout_alignTop="@+id/textViewCurrent"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
+
+    <com.craftapps.remotehorticulture.app.widgets.VerticalSeekBar
+        android:layout_width="wrap_content"
+        android:layout_height="200dp"
+        android:max="100"
+        android:id="@+id/seekBar_max"
+        android:progress="100"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:layout_below="@+id/textView2" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="00.0° F"
+        android:id="@+id/textViewCurrent"
+        android:layout_centerHorizontal="true"
+        android:editable="true"
+        android:textSize="60dp"
+        android:typeface="serif"
+        android:layout_below="@+id/textView2" />
+
+    <EditText
+        android:layout_width="150dp"
+        android:layout_height="wrap_content"
+        android:inputType="none"
+        android:ems="10"
+        android:id="@+id/editTextMax"
+        android:gravity="center"
+        android:textColor="#FF5050"
+        android:text="00.00° F"
+        android:typeface="serif"
+        android:textSize="30dp"
+        android:singleLine="true"
+        android:editable="false"
+        android:enabled="false"
+        android:focusable="true"
+        android:layout_alignTop="@+id/editTextMin"
+        android:layout_toLeftOf="@+id/seekBar_max" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text="Max Temp"
+        android:id="@+id/textView"
+        android:layout_below="@+id/editTextMin"
+        android:layout_alignRight="@+id/editTextMax"
+        android:layout_alignEnd="@+id/editTextMax"
+        android:layout_alignBottom="@+id/seekBar_max"
+        android:layout_alignLeft="@+id/editTextMax"
+        android:layout_alignStart="@+id/editTextMax"
+        android:typeface="serif"
+        android:gravity="center_horizontal|top"
+        android:textColor="#ff646464" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text="Min Temp"
+        android:id="@+id/textView3"
+        android:layout_below="@+id/editTextMin"
+        android:layout_alignRight="@+id/editTextMin"
+        android:layout_alignEnd="@+id/editTextMin"
+        android:layout_alignBottom="@+id/seekBar_min"
+        android:layout_alignLeft="@+id/editTextMin"
+        android:layout_alignStart="@+id/editTextMin"
+        android:typeface="serif"
+        android:gravity="center_horizontal|top"
+        android:textColor="#ff646464" />
+
+</RelativeLayout>

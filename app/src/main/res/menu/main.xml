@@ -6,25 +6,30 @@
     <item android:id="@+id/action_temperature"
         android:title="Temperature Action"
         android:orderInCategory="100"
+        android:icon="@drawable/ic_menu_temperature"
         app:showAsAction="withText|ifRoom" />
 
     <item android:id="@+id/action_humidity"
         android:title="Humidity Action"
         android:orderInCategory="100"
+        android:icon="@drawable/ic_menu_humidity"
         app:showAsAction="withText|ifRoom" />
 
     <item android:id="@+id/action_lighting"
         android:title="Lighting Action"
         android:orderInCategory="100"
+        android:icon="@drawable/ic_menu_lighting"
         app:showAsAction="withText|ifRoom" />
 
     <item android:id="@+id/action_water"
         android:title="Water Action"
         android:orderInCategory="100"
+        android:icon="@drawable/ic_menu_water"
         app:showAsAction="withText|ifRoom" />
 
-    <item android:id="@+id/action_settings"
-        android:title="@string/action_settings"
-        android:orderInCategory="100"
-        app:showAsAction="never" />
+    <item android:id="@+id/action_refresh"
+        android:title="Refresh"
+        android:icon="@drawable/ic_menu_refresh"
+        android:orderInCategory="101"
+        app:showAsAction="ifRoom" />
 </menu>

@@ -1,6 +1,5 @@
 package com.craftapps.remotehorticulture.app.Fragments;
 
-import android.app.Activity;
 import android.app.ProgressDialog;
 import android.graphics.Color;
 import android.graphics.LinearGradient;
@@ -9,6 +8,7 @@ import android.graphics.Shader;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -37,9 +37,8 @@ import java.util.List;
 
 public class OverviewFragment extends Fragment {
 
-    View rootView;
+    private ProgressDialog progressDialog;
     private XYPlot plot;
-    ProgressDialog progressDialog;
     final List<Double> parseSeries = new ArrayList<Double>();
 
     public OverviewFragment() {
@@ -62,37 +61,47 @@ public class OverviewFragment extends Fragment {
         MenuItem mLightingMenuItem = menu.findItem(R.id.action_lighting);
         MenuItem mWaterMenuItem = menu.findItem(R.id.action_water);
 
-        mTemperatureMenuItem.setVisible(false);
-        mHumidityMenuItem.setVisible(false);
-        mLightingMenuItem.setVisible(false);
-        mWaterMenuItem.setVisible(false);
+        if (mTemperatureMenuItem != null) mTemperatureMenuItem.setVisible(false);
+        if (mHumidityMenuItem != null) mHumidityMenuItem.setVisible(false);
+        if (mLightingMenuItem != null) mLightingMenuItem.setVisible(false);
+        if (mWaterMenuItem != null) mWaterMenuItem.setVisible(false);
 
         super.onCreateOptionsMenu(menu, inflater);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-        if (id == R.id.action_temperature) {
-            Toast.makeText(getActivity(), "Temperature action.", Toast.LENGTH_SHORT).show();
-            return true;
+        switch (item.getItemId())
+        {
+            case R.id.action_refresh:
+                Toast.makeText(getActivity(), "Refreshed...", Toast.LENGTH_SHORT).show();
+                Fragment newFragment = new OverviewFragment();
+                FragmentTransaction transaction = getFragmentManager().beginTransaction();
+                transaction.replace(R.id.container, newFragment);
+                transaction.addToBackStack(null);
+                transaction.commit();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
         }
-        return super.onOptionsItemSelected(item);
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        rootView = inflater.inflate(R.layout.fragment_overview, container, false);
-        plot = (XYPlot) rootView.findViewById(R.id.mySimpleXYPlot);
+        View rootView = inflater.inflate(R.layout.fragment_overview, container, false);
 
-        getItemLists gfl = new getItemLists();
-        gfl.execute();
+        if (rootView != null) plot = (XYPlot) rootView.findViewById(R.id.mySimpleXYPlot);
+
+        getTemperatureList asyncTask = new getTemperatureList();
+        asyncTask.execute();
 
         return rootView;
     }
 
-    //--------------------------------------- ASYNC TASK ----------------------------------------------
-    private class getItemLists extends
+
+
+    //------------------------------------------------------ ASYNC TASK -------------------------------------------------------------
+    private class getTemperatureList extends
             AsyncTask<Void, String, List<Double>> {
         @Override
         protected void onPreExecute() {
@@ -125,7 +134,7 @@ public class OverviewFragment extends Fragment {
                 }
             });
 
-            try { Thread.sleep(500); }
+            try { Thread.sleep(750); }
             catch (InterruptedException e) { e.printStackTrace(); }
 
             return parseSeries;

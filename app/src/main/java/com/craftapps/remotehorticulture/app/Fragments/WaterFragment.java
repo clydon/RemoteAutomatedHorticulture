@@ -3,6 +3,7 @@ package com.craftapps.remotehorticulture.app.Fragments;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -26,10 +27,7 @@ public class WaterFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-
-        View rootView = inflater.inflate(R.layout.fragment_water, container, false);
-
-        return rootView;
+        return inflater.inflate(R.layout.fragment_water, container, false);
     }
 
     @Override
@@ -43,22 +41,31 @@ public class WaterFragment extends Fragment {
         MenuItem mLightingMenuItem = menu.findItem(R.id.action_lighting);
         MenuItem mWaterMenuItem = menu.findItem(R.id.action_water);
 
-        mTemperatureMenuItem.setVisible(false);
-        mHumidityMenuItem.setVisible(false);
-        mLightingMenuItem.setVisible(false);
-        mWaterMenuItem.setVisible(true);
+        if (mTemperatureMenuItem != null) mTemperatureMenuItem.setVisible(false);
+        if (mHumidityMenuItem != null) mHumidityMenuItem.setVisible(false);
+        if (mLightingMenuItem != null) mLightingMenuItem.setVisible(false);
+        if (mWaterMenuItem != null) mWaterMenuItem.setVisible(true);
 
         super.onCreateOptionsMenu(menu, inflater);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-        if (id == R.id.action_water) {
-            Toast.makeText(getActivity(), "Water action.", Toast.LENGTH_SHORT).show();
-            return true;
+        switch(item.getItemId()) {
+            case R.id.action_water:
+                Toast.makeText(getActivity(), "Water action.", Toast.LENGTH_SHORT).show();
+                return true;
+            case R.id.action_refresh:
+                Toast.makeText(getActivity(), "Refreshed...", Toast.LENGTH_SHORT).show();
+                Fragment newFragment = new WaterFragment();
+                FragmentTransaction transaction = getFragmentManager().beginTransaction();
+                transaction.replace(R.id.container, newFragment);
+                transaction.addToBackStack(null);
+                transaction.commit();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
         }
-        return super.onOptionsItemSelected(item);
     }
 
 }

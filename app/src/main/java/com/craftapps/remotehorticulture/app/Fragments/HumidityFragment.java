@@ -3,6 +3,7 @@ package com.craftapps.remotehorticulture.app.Fragments;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -30,8 +31,6 @@ public class HumidityFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
-
-
         View rootView = inflater.inflate(R.layout.fragment_humidity, container, false);
         final VerticalSeekBar verticalSeekBar = (VerticalSeekBar) rootView.findViewById(R.id.verticalSeekBar);
         final TextView textView = (TextView) rootView.findViewById(R.id.textView2);
@@ -47,13 +46,10 @@ public class HumidityFragment extends Fragment {
             }
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                // TODO Auto-generated method stub
                 verticalSeekBar.setProgress(progress);
                 textView.setText(String.valueOf(progress));
-
             }
         });
-
         return rootView;
     }
 
@@ -68,22 +64,31 @@ public class HumidityFragment extends Fragment {
         MenuItem mLightingMenuItem = menu.findItem(R.id.action_lighting);
         MenuItem mWaterMenuItem = menu.findItem(R.id.action_water);
 
-        mTemperatureMenuItem.setVisible(false);
-        mHumidityMenuItem.setVisible(true);
-        mLightingMenuItem.setVisible(false);
-        mWaterMenuItem.setVisible(false);
+        if (mTemperatureMenuItem != null) mTemperatureMenuItem.setVisible(false);
+        if (mHumidityMenuItem != null) mHumidityMenuItem.setVisible(true);
+        if (mLightingMenuItem != null) mLightingMenuItem.setVisible(false);
+        if (mWaterMenuItem != null) mWaterMenuItem.setVisible(false);
 
         super.onCreateOptionsMenu(menu, inflater);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-        if (id == R.id.action_humidity) {
-            Toast.makeText(getActivity(), "Humidity action.", Toast.LENGTH_SHORT).show();
-            return true;
+        switch(item.getItemId()) {
+            case R.id.action_humidity:
+                Toast.makeText(getActivity(), "Humidity action.", Toast.LENGTH_SHORT).show();
+                return true;
+            case R.id.action_refresh:
+                Toast.makeText(getActivity(), "Refreshed...", Toast.LENGTH_SHORT).show();
+                Fragment newFragment = new HumidityFragment();
+                FragmentTransaction transaction = getFragmentManager().beginTransaction();
+                transaction.replace(R.id.container, newFragment);
+                transaction.addToBackStack(null);
+                transaction.commit();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
         }
-        return super.onOptionsItemSelected(item);
     }
 
 }

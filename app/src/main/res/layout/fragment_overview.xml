@@ -5,12 +5,12 @@
     android:layout_height="match_parent">
 
     <Button
-        android:id="@+id/button"
+        android:id="@+id/buttonOverride"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@+id/mySimpleXYPlot"
         android:layout_centerHorizontal="true"
-        android:text="Load Values //todo"/>
+        android:text="Load Values"/>
 
     <com.androidplot.xy.XYPlot
         android:id="@+id/mySimpleXYPlot"
