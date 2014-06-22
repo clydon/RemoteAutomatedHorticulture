@@ -128,10 +128,10 @@ public class TemperatureFragment extends Fragment {
 
 
     private void initializeUIElements(View view){
-        plot = (XYPlot) (view != null ? view.findViewById(R.id.mySimpleXYPlot) : null);
+        plot = (XYPlot) (view != null ? view.findViewById(R.id.temperaturePlot) : null);
         seekBarCurrentTemp = (VerticalSeekBar) (view != null ? view.findViewById(R.id.verticalSeekBar) : null);
         textViewLatestTemp = (TextView) (view != null ? view.findViewById(R.id.textView_latestTemp) : null);
-        textViewLatestDate = (TextView) (view != null ? view.findViewById(R.id.textView_latestDate) : null);
+        textViewLatestDate = (TextView) (view != null ? view.findViewById(R.id.textView_latestTempDate) : null);
         textViewMinTemp = (TextView) (view != null ? view.findViewById(R.id.textView_minTemp) : null);
         textViewMaxTemp = (TextView) (view != null ? view.findViewById(R.id.textView_maxTemp) : null);
     }
@@ -172,7 +172,8 @@ public class TemperatureFragment extends Fragment {
                                     }
                                 });
                             }
-                        });
+                        }
+                );
         alert.show();
     }
 

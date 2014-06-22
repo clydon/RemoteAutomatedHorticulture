@@ -12,7 +12,8 @@
         android:id="@+id/verticalSeekBar"
         android:progress="50"
         android:thumb="@android:color/transparent"
-        android:layout_alignBottom="@+id/textView_latestTemp" />
+        android:layout_alignBottom="@+id/textView_latestTemp"
+        android:indeterminate="false" />
 
     <TextView
         android:layout_width="250dp"
@@ -34,7 +35,7 @@
         android:layout_height="50dp"
         android:textAppearance="?android:attr/textAppearanceSmall"
         android:text="Date"
-        android:id="@+id/textView_latestDate"
+        android:id="@+id/textView_latestTempDate"
         android:gravity="center"
         android:typeface="serif"
         android:layout_above="@+id/textView_minTempLabel"
@@ -42,9 +43,9 @@
         android:layout_alignStart="@+id/textView_latestTemp"
         android:layout_alignRight="@+id/textView_latestTemp"
         android:layout_alignEnd="@+id/textView_latestTemp" />
-    
+
     <com.androidplot.xy.XYPlot
-        android:id="@+id/mySimpleXYPlot"
+        android:id="@+id/temperaturePlot"
         android:layout_width="fill_parent"
         android:layout_height="250dp"
         androidPlot.title="Temperature"
