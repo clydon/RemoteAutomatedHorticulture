@@ -84,8 +84,7 @@ public class TemperatureFragment extends Fragment {
 
         initializeUIElements(rootView);
 
-        GetParseValues backgroundTask = new GetParseValues();
-        backgroundTask.execute();
+        parseQuery();
 
         return rootView;
     }
@@ -313,60 +312,52 @@ public class TemperatureFragment extends Fragment {
 
     }
 
-    //------------------------------------------------------ ASYNC TASK -------------------------------------------------------------
-    private class GetParseValues extends
-            AsyncTask<Void, Void, Void> {
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
+    private void preParseQuery() {
+        plot.setVisibility(View.INVISIBLE);
+        textViewLatestDate.setVisibility(View.INVISIBLE);
+        textViewLatestTemp.setVisibility(View.INVISIBLE);
+        textViewMaxTemp.setVisibility(View.INVISIBLE);
+        textViewMinTemp.setVisibility(View.INVISIBLE);
 
-            plot.setVisibility(View.INVISIBLE);
-            textViewLatestDate.setVisibility(View.INVISIBLE);
-            textViewLatestTemp.setVisibility(View.INVISIBLE);
-            textViewMaxTemp.setVisibility(View.INVISIBLE);
-            textViewMinTemp.setVisibility(View.INVISIBLE);
+        progressDialog = new ProgressDialog(getActivity());
+        progressDialog.setTitle("Please Wait..");
+        progressDialog.setMessage("Loading...");
+        progressDialog.setCancelable(false);
+        progressDialog.show();
+    }
 
-            progressDialog = new ProgressDialog(getActivity());
-            progressDialog.setTitle("Please Wait..");
-            progressDialog.setMessage("Loading...");
-            progressDialog.setCancelable(false);
-            progressDialog.show();
-        }
+    private void parseQuery() {
+        preParseQuery();
 
-        @Override
-        protected Void doInBackground(final Void... params) {
-            ParseQuery<ParseObject> query = ParseQuery.getQuery("Temperature");
-            query.orderByDescending("updatedAt");
-            query.findInBackground(new FindCallback<ParseObject>() {
-                public void done(final List<ParseObject> tempList, ParseException e) {
-                    if (e == null) {
-                        ParseQuery<ParseObject> automationControlQuery = ParseQuery.getQuery("AutomationControl");
-                        automationControlQuery.findInBackground(new FindCallback<ParseObject>() {
-                            public void done(List<ParseObject> automationControlList, ParseException e) {
-                                if (e == null) {
-                                    setGlobalValues(tempList, automationControlList);
-                                }
+        ParseQuery<ParseObject> query = ParseQuery.getQuery("Temperature");
+        query.orderByDescending("updatedAt");
+
+        query.findInBackground(new FindCallback<ParseObject>() {
+            public void done(final List<ParseObject> tempList, ParseException e) {
+                if (e == null) {
+                    ParseQuery<ParseObject> automationControlQuery = ParseQuery.getQuery("AutomationControl");
+                    automationControlQuery.findInBackground(new FindCallback<ParseObject>() {
+                        public void done(List<ParseObject> automationControlList, ParseException e) {
+                            if (e == null) {
+                                setGlobalValues(tempList, automationControlList);
+                                postParseQuery();
                             }
-                        });
-                    } else {
-                        Log.i("error", ": findInBackground");
-                    }
+                        }
+                    });
+                } else {
+                    Log.i("error", ": findInBackground");
                 }
-            });
+            }
+        });
+    }
 
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            super.onPostExecute(aVoid);
-            progressDialog.dismiss();
-            plot.setVisibility(View.VISIBLE);
-            textViewLatestDate.setVisibility(View.VISIBLE);
-            textViewLatestTemp.setVisibility(View.VISIBLE);
-            textViewMaxTemp.setVisibility(View.VISIBLE);
-            textViewMinTemp.setVisibility(View.VISIBLE);
-        }
+    private void postParseQuery() {
+        plot.setVisibility(View.VISIBLE);
+        textViewLatestDate.setVisibility(View.VISIBLE);
+        textViewLatestTemp.setVisibility(View.VISIBLE);
+        textViewMaxTemp.setVisibility(View.VISIBLE);
+        textViewMinTemp.setVisibility(View.VISIBLE);
+        progressDialog.dismiss();
     }
 
     private void refreshFragment(){

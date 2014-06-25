@@ -81,8 +81,8 @@
         android:padding="16dp"
         android:typeface="serif"
         android:layout_below="@+id/textView_latestTemp"
-        android:layout_alignLeft="@+id/textView_latestDate"
-        android:layout_alignStart="@+id/textView_latestDate" />
+        android:layout_alignLeft="@+id/textView_latestTempDate"
+        android:layout_alignStart="@+id/textView_latestTempDate" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -119,8 +119,8 @@
         android:gravity="center_horizontal|top"
         android:typeface="serif"
         android:layout_below="@+id/textView_maxTempLabel"
-        android:layout_alignRight="@+id/textView_latestDate"
-        android:layout_alignEnd="@+id/textView_latestDate"
+        android:layout_alignRight="@+id/textView_latestTempDate"
+        android:layout_alignEnd="@+id/textView_latestTempDate"
         android:layout_alignLeft="@+id/textView_maxTempLabel"
         android:layout_alignStart="@+id/textView_maxTempLabel"
         android:paddingBottom="50dp" />

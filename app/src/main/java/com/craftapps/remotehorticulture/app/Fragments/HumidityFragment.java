@@ -52,12 +52,6 @@ public class HumidityFragment extends Fragment {
     private TextView textViewMaxHumid;
     private VerticalSeekBar seekBarCurrentHumid;
 
-    private VerticalSeekBar seekBarDialogMin;
-    private VerticalSeekBar seekBarDialogMax;
-    private TextView textViewDialogCurrentHumid;
-    private EditText editTextDialogMinHumid;
-    private EditText editTextDialogMaxHumid;
-
     final List<Double> parseSeries = new ArrayList<Double>();
     private ProgressDialog progressDialog;
     private Number currentHumid;
@@ -80,7 +74,7 @@ public class HumidityFragment extends Fragment {
 
         initializeUIElements(rootView);
 
-
+        parseQuery();
 
         return rootView;
     }
@@ -126,9 +120,6 @@ public class HumidityFragment extends Fragment {
         textViewLatestDate = (TextView) (view != null ? view.findViewById(R.id.textView_latestHumidDate) : null);
         textViewMinHumid = (TextView) (view != null ? view.findViewById(R.id.textView_minHumid) : null);
         textViewMaxHumid = (TextView) (view != null ? view.findViewById(R.id.textView_maxHumid) : null);
-
-        GetParseValues backgroundTask = new GetParseValues();
-        backgroundTask.execute();
     }
 
     private void setGlobalValues(List<ParseObject> humidList) {
@@ -219,35 +210,29 @@ public class HumidityFragment extends Fragment {
         plot.redraw();
     }
 
+    private void preParseQuery() {
+        plot.setVisibility(View.INVISIBLE);
+        textViewLatestDate.setVisibility(View.INVISIBLE);
+        textViewLatestHumid.setVisibility(View.INVISIBLE);
+        textViewMaxHumid.setVisibility(View.INVISIBLE);
+        textViewMinHumid.setVisibility(View.INVISIBLE);
 
-    //------------------------------------------------------ ASYNC TASK -------------------------------------------------------------
-    private class GetParseValues extends
-            AsyncTask<Void, Void, Void> {
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
+        progressDialog = new ProgressDialog(getActivity());
+        progressDialog.setTitle("Please Wait..");
+        progressDialog.setMessage("Loading...");
+        progressDialog.setCancelable(false);
+        progressDialog.show();
+    }
 
-            plot.setVisibility(View.INVISIBLE);
-            textViewLatestDate.setVisibility(View.INVISIBLE);
-            textViewLatestHumid.setVisibility(View.INVISIBLE);
-            textViewMaxHumid.setVisibility(View.INVISIBLE);
-            textViewMinHumid.setVisibility(View.INVISIBLE);
+    private void parseQuery() {
+        preParseQuery();
 
-            progressDialog = new ProgressDialog(getActivity());
-            progressDialog.setTitle("Please Wait..");
-            progressDialog.setMessage("Loading...");
-            progressDialog.setCancelable(false);
-            progressDialog.show();
-        }
-
-        @Override
-        protected Void doInBackground(final Void... params) {
-            ParseQuery<ParseObject> query = ParseQuery.getQuery("Humidity");
-            query.orderByDescending("updatedAt");
-            query.findInBackground(new FindCallback<ParseObject>() {
-                public void done(final List<ParseObject> humidList, ParseException e) {
-                    if (e == null) {
-                        setGlobalValues(humidList);
+        ParseQuery<ParseObject> query = ParseQuery.getQuery("Humidity");
+        query.orderByDescending("updatedAt");
+        query.findInBackground(new FindCallback<ParseObject>() {
+            public void done(final List<ParseObject> humidList, ParseException e) {
+                if (e == null) {
+                    setGlobalValues(humidList);
                         /*ParseQuery<ParseObject> automationControlQuery = ParseQuery.getQuery("AutomationControl");
                         automationControlQuery.findInBackground(new FindCallback<ParseObject>() {
                             public void done(List<ParseObject> automationControlList, ParseException e) {
@@ -256,25 +241,21 @@ public class HumidityFragment extends Fragment {
                                 }
                             }
                         });*/
-                    } else {
-                        Log.i("error", ": findInBackground");
-                    }
+                    postParseQuery();
+                } else {
+                    Log.i("error", ": findInBackground");
                 }
-            });
+            }
+        });
+    }
 
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            super.onPostExecute(aVoid);
-            progressDialog.dismiss();
-            plot.setVisibility(View.VISIBLE);
-            textViewLatestDate.setVisibility(View.VISIBLE);
-            textViewLatestHumid.setVisibility(View.VISIBLE);
-            textViewMaxHumid.setVisibility(View.VISIBLE);
-            textViewMinHumid.setVisibility(View.VISIBLE);
-        }
+    private void postParseQuery() {
+        plot.setVisibility(View.VISIBLE);
+        textViewLatestDate.setVisibility(View.VISIBLE);
+        textViewLatestHumid.setVisibility(View.VISIBLE);
+        textViewMaxHumid.setVisibility(View.VISIBLE);
+        textViewMinHumid.setVisibility(View.VISIBLE);
+        progressDialog.dismiss();
     }
 
     private void refreshFragment() {

@@ -118,8 +118,8 @@
         android:gravity="center_horizontal|top"
         android:typeface="serif"
         android:layout_below="@+id/textView_maxHumidLabel"
-        android:layout_alignRight="@+id/textView_latestDate"
-        android:layout_alignEnd="@+id/textView_latestDate"
+        android:layout_alignRight="@+id/textView_latestHumidDate"
+        android:layout_alignEnd="@+id/textView_latestHumidDate"
         android:layout_alignLeft="@+id/textView_maxHumidLabel"
         android:layout_alignStart="@+id/textView_maxHumidLabel"
         android:paddingBottom="50dp" />

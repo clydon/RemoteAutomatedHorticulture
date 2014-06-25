@@ -7,7 +7,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="Setup Alerts:"
+        android:text="Set Temperature Alerts:"
         android:id="@+id/textView2"
         android:padding="16dp"
         android:typeface="serif"
@@ -37,7 +37,7 @@
         android:layout_height="200dp"
         android:max="120"
         android:id="@+id/seekBar_min"
-        android:progress="50"
+        android:progress="0"
         android:layout_alignTop="@+id/textViewCurrent"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true" />
@@ -45,9 +45,9 @@
     <com.craftapps.remotehorticulture.app.widgets.VerticalSeekBar
         android:layout_width="wrap_content"
         android:layout_height="200dp"
-        android:max="100"
+        android:max="120"
         android:id="@+id/seekBar_max"
-        android:progress="100"
+        android:progress="120"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
         android:layout_below="@+id/textView2" />
