@@ -24,9 +24,7 @@ import android.widget.ListView;
 
 import com.craftapps.remotehorticulture.app.Fragments.HumidityFragment;
 import com.craftapps.remotehorticulture.app.Fragments.LightingFragment;
-import com.craftapps.remotehorticulture.app.Fragments.NotificationFragment;
 import com.craftapps.remotehorticulture.app.Fragments.OverviewFragment;
-import com.craftapps.remotehorticulture.app.Fragments.ScheduleFragment;
 import com.craftapps.remotehorticulture.app.Fragments.TemperatureFragment;
 import com.craftapps.remotehorticulture.app.Fragments.WaterFragment;
 
@@ -110,8 +108,6 @@ public class NavigationDrawerFragment extends Fragment {
                         getString(R.string.title_section3),
                         getString(R.string.title_section4),
                         getString(R.string.title_section5),
-                        getString(R.string.title_section6),
-                        getString(R.string.title_section7),
                 }));
         mDrawerListView.setItemChecked(mCurrentSelectedPosition, true);
         return mDrawerListView;
@@ -240,20 +236,6 @@ public class NavigationDrawerFragment extends Fragment {
 
             case 4:
                 newFragment = new LightingFragment();
-                transaction.replace(R.id.container, newFragment);
-                transaction.addToBackStack(null);
-                transaction.commit();
-                break;
-
-            case 5:
-                newFragment = new ScheduleFragment();
-                transaction.replace(R.id.container, newFragment);
-                transaction.addToBackStack(null);
-                transaction.commit();
-                break;
-
-            case 6:
-                newFragment = new NotificationFragment();
                 transaction.replace(R.id.container, newFragment);
                 transaction.addToBackStack(null);
                 transaction.commit();

@@ -16,7 +16,7 @@
 
     <TextView
         android:layout_width="250dp"
-        android:layout_height="200dp"
+        android:layout_height="150dp"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="0.00 %"
         android:id="@+id/textView_latestHumid"
@@ -43,30 +43,10 @@
         android:layout_alignRight="@+id/textView_latestHumid"
         android:layout_alignEnd="@+id/textView_latestHumid" />
 
-    <com.androidplot.xy.XYPlot
-        android:id="@+id/humidityPlot"
+    <WebView
         android:layout_width="fill_parent"
-        android:layout_height="250dp"
-        androidPlot.title="Humidity"
-        androidPlot.domainLabel="Domain"
-        androidPlot.rangeLabel="Range"
-        androidPlot.titleWidget.labelPaint.textSize="@dimen/title_font_size"
-        androidPlot.domainLabelWidget.labelPaint.textSize="@dimen/domain_label_font_size"
-        androidPlot.rangeLabelWidget.labelPaint.textSize="@dimen/range_label_font_size"
-        androidPlot.graphWidget.marginTop="20dp"
-        androidPlot.graphWidget.marginLeft="15dp"
-        androidPlot.graphWidget.marginBottom="25dp"
-        androidPlot.graphWidget.marginRight="10dp"
-        androidPlot.graphWidget.rangeLabelPaint.textSize="@dimen/range_tick_label_font_size"
-        androidPlot.graphWidget.rangeOriginLabelPaint.textSize="@dimen/range_tick_label_font_size"
-        androidPlot.graphWidget.domainLabelPaint.textSize="@dimen/domain_tick_label_font_size"
-        androidPlot.graphWidget.domainOriginLabelPaint.textSize="@dimen/domain_tick_label_font_size"
-        androidPlot.legendWidget.textPaint.textSize="@dimen/legend_text_font_size"
-        androidPlot.legendWidget.iconSizeMetrics.heightMetric.value="15dp"
-        androidPlot.legendWidget.iconSizeMetrics.widthMetric.value="15dp"
-        androidPlot.legendWidget.heightMetric.value="25dp"
-        androidPlot.legendWidget.positionMetrics.anchor="right_bottom"
-        androidPlot.graphWidget.gridLinePaint.color="#000000"
+        android:layout_height="fill_parent"
+        android:id="@+id/webView"
         android:layout_below="@+id/textView_minHumid"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true" />
@@ -107,7 +87,7 @@
         android:layout_alignRight="@+id/textView_minHumidLabel"
         android:layout_alignEnd="@+id/textView_minHumidLabel"
         android:gravity="center_horizontal|top"
-        android:paddingBottom="50dp" />
+        android:paddingBottom="25dp" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -122,7 +102,7 @@
         android:layout_alignEnd="@+id/textView_latestHumidDate"
         android:layout_alignLeft="@+id/textView_maxHumidLabel"
         android:layout_alignStart="@+id/textView_maxHumidLabel"
-        android:paddingBottom="50dp" />
+        android:paddingBottom="25dp" />
 
 
 </RelativeLayout>

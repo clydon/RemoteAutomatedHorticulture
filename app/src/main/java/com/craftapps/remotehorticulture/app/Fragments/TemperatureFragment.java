@@ -4,10 +4,7 @@ package com.craftapps.remotehorticulture.app.Fragments;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
-import android.graphics.Color;
-import android.graphics.LinearGradient;
-import android.graphics.Paint;
-import android.graphics.Shader;
+import android.content.res.AssetManager;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
@@ -18,18 +15,13 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
 import android.widget.EditText;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.androidplot.Plot;
-import com.androidplot.xy.BoundaryMode;
-import com.androidplot.xy.LineAndPointFormatter;
-import com.androidplot.xy.SimpleXYSeries;
-import com.androidplot.xy.XYPlot;
-import com.androidplot.xy.XYSeries;
-import com.androidplot.xy.XYStepMode;
 import com.craftapps.remotehorticulture.app.R;
 import com.craftapps.remotehorticulture.app.widgets.VerticalSeekBar;
 import com.parse.FindCallback;
@@ -39,7 +31,9 @@ import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.SaveCallback;
 
-import java.text.DecimalFormat;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -47,7 +41,6 @@ import java.util.List;
 
 public class TemperatureFragment extends Fragment {
 
-    private XYPlot plot;
     private TextView textViewLatestTemp;
     private TextView textViewLatestDate;
     private TextView textViewMinTemp;
@@ -59,6 +52,7 @@ public class TemperatureFragment extends Fragment {
     private TextView textViewDialogCurrentTemp;
     private EditText editTextDialogMinTemp;
     private EditText editTextDialogMaxTemp;
+    private WebView webViewTemp;
 
     final List<Double> parseSeries = new ArrayList<Double>();
     private ProgressDialog progressDialog;
@@ -126,12 +120,12 @@ public class TemperatureFragment extends Fragment {
 
 
     private void initializeUIElements(View view){
-        plot = (XYPlot) (view != null ? view.findViewById(R.id.temperaturePlot) : null);
         seekBarCurrentTemp = (VerticalSeekBar) (view != null ? view.findViewById(R.id.verticalSeekBar) : null);
         textViewLatestTemp = (TextView) (view != null ? view.findViewById(R.id.textView_latestTemp) : null);
         textViewLatestDate = (TextView) (view != null ? view.findViewById(R.id.textView_latestTempDate) : null);
         textViewMinTemp = (TextView) (view != null ? view.findViewById(R.id.textView_minTemp) : null);
         textViewMaxTemp = (TextView) (view != null ? view.findViewById(R.id.textView_maxTemp) : null);
+        webViewTemp = (WebView) (view != null ? view.findViewById(R.id.webView) : null);
     }
 
     private void initializeDialogUIElements(View view) {
@@ -175,64 +169,27 @@ public class TemperatureFragment extends Fragment {
         alert.show();
     }
 
-    private void setGlobalValues(List<ParseObject> tempList, List<ParseObject> automationControlList) {
-        currentTemp = tempList.get(0).getNumber("Temperature");
+    private void setGlobalValues(List<ParseObject> monitorDataList, List<ParseObject> automationControlList) {
+        currentTemp = monitorDataList.get(0).getNumber("fahrenheit");
         Format formatter = new SimpleDateFormat("hh:mm a - EEE MMMM d");
-        currentTempDate = formatter.format(tempList.get(0).getUpdatedAt());
+        currentTempDate = formatter.format(monitorDataList.get(0).getUpdatedAt());
         minTemp = automationControlList.get(0).getNumber("TempMin");
         maxTemp = automationControlList.get(0).getNumber("TempMax");
 
-        for (ParseObject temp : tempList) {
-            Log.i("query", "= " + temp.getNumber("Temperature"));
-            parseSeries.add(temp.getDouble("Temperature"));
+        for (ParseObject temp : monitorDataList) {
+            Log.i("query", "= " + temp.getNumber("fahrenheit"));
+            parseSeries.add(temp.getDouble("fahrenheit"));
         }
 
         applyValuesToUI();
     }
 
-    private void setupGraph() {
-        XYSeries series3 = new SimpleXYSeries(parseSeries, SimpleXYSeries.ArrayFormat.Y_VALS_ONLY, "ParseSeries");
-
-        plot.getGraphWidget().getGridBackgroundPaint().setColor(Color.WHITE);
-        plot.getGraphWidget().getDomainOriginLinePaint().setColor(Color.WHITE);
-        plot.getGraphWidget().getRangeOriginLinePaint().setColor(Color.WHITE);
-
-        plot.setBorderStyle(Plot.BorderStyle.SQUARE, null, null);
-        plot.getBorderPaint().setStrokeWidth(1);
-        plot.getBorderPaint().setAntiAlias(false);
-        plot.getBorderPaint().setColor(Color.WHITE);
-
-        // setup our line fill paint to be a slightly transparent gradient:
-        Paint lineFill = new Paint();
-        lineFill.setAlpha(200);
-        lineFill.setShader(new LinearGradient(0, 0, 0, 250, Color.BLUE, Color.RED, Shader.TileMode.MIRROR));
-
-        LineAndPointFormatter formatter  = new LineAndPointFormatter(Color.rgb(0, 0,0), Color.BLUE, Color.RED, null);
-        formatter.setFillPaint(lineFill);
-        plot.getGraphWidget().setPaddingRight(2);
-        plot.addSeries(series3, formatter);
-
-        // customize our domain/range labels
-        plot.setDomainLabel("Interval");
-        plot.setRangeLabel("Temperature (F)");
-        plot.getLegendWidget().setVisible(false);
-
-        // get rid of decimal points in our range labels:
-        plot.setRangeValueFormat(new DecimalFormat("0"));
-        plot.setDomainValueFormat(new DecimalFormat("0"));
-
-        plot.getGraphWidget().setGridBackgroundPaint(null);
-
-        plot.setRangeStep(XYStepMode.INCREMENT_BY_VAL, 20);
-        plot.setDomainStep(XYStepMode.INCREMENT_BY_VAL, 1);
-        plot.setTicksPerDomainLabel(5);
-        plot.setRangeBoundaries(0, 160, BoundaryMode.FIXED);
-
-        plot.redraw();
-    }
-
     private void applyValuesToUI() {
-        setupGraph();
+        webViewTemp.setVerticalScrollBarEnabled(false);
+        WebSettings webSettings = webViewTemp.getSettings();
+        webSettings.setJavaScriptEnabled(true);
+        webSettings.setDomStorageEnabled(true);
+        loadChart();
 
         seekBarCurrentTemp.setProgress(currentTemp.intValue());
         seekBarCurrentTemp.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -257,6 +214,28 @@ public class TemperatureFragment extends Fragment {
 
         textViewMinTemp.setText(minTemp + "° F");
         textViewMaxTemp.setText(maxTemp + "° F");
+    }
+
+    private void loadChart() {
+        String content = null;
+        try {
+            AssetManager assetManager = getActivity().getAssets();
+            InputStream in = assetManager.open("temperature.html");
+            byte[] bytes = readFully(in);
+            content = new String(bytes, "UTF-8");
+        } catch (IOException e){
+            Log.e("loadChart", "An error occurred.", e);
+        }
+        webViewTemp.loadDataWithBaseURL("file:///android_asset/", content, "text/html", "utf-8", null);
+    }
+
+    private static byte[] readFully(InputStream in) throws IOException {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        byte[] buffer = new byte[1024];
+        for (int count; (count = in.read(buffer)) != -1; ) {
+            out.write(buffer, 0, count);
+        }
+        return out.toByteArray();
     }
 
     private void applyValuesToDialogUI() {
@@ -312,7 +291,6 @@ public class TemperatureFragment extends Fragment {
     }
 
     private void preParseQuery() {
-        plot.setVisibility(View.INVISIBLE);
         textViewLatestDate.setVisibility(View.INVISIBLE);
         textViewLatestTemp.setVisibility(View.INVISIBLE);
         textViewMaxTemp.setVisibility(View.INVISIBLE);
@@ -328,17 +306,17 @@ public class TemperatureFragment extends Fragment {
     private void parseQuery() {
         preParseQuery();
 
-        ParseQuery<ParseObject> query = ParseQuery.getQuery("Temperature");
+        ParseQuery<ParseObject> query = ParseQuery.getQuery("MonitorData");
         query.orderByDescending("updatedAt");
 
         query.findInBackground(new FindCallback<ParseObject>() {
-            public void done(final List<ParseObject> tempList, ParseException e) {
+            public void done(final List<ParseObject> monitorDataList, ParseException e) {
                 if (e == null) {
                     ParseQuery<ParseObject> automationControlQuery = ParseQuery.getQuery("AutomationControl");
                     automationControlQuery.findInBackground(new FindCallback<ParseObject>() {
                         public void done(List<ParseObject> automationControlList, ParseException e) {
                             if (e == null) {
-                                setGlobalValues(tempList, automationControlList);
+                                setGlobalValues(monitorDataList, automationControlList);
                                 postParseQuery();
                             }
                         }
@@ -351,7 +329,6 @@ public class TemperatureFragment extends Fragment {
     }
 
     private void postParseQuery() {
-        plot.setVisibility(View.VISIBLE);
         textViewLatestDate.setVisibility(View.VISIBLE);
         textViewLatestTemp.setVisibility(View.VISIBLE);
         textViewMaxTemp.setVisibility(View.VISIBLE);
@@ -366,5 +343,4 @@ public class TemperatureFragment extends Fragment {
         transaction.addToBackStack(null);
         transaction.commit();
     }
-
 }

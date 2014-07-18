@@ -16,6 +16,11 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
+import android.widget.EditText;
+import android.widget.SeekBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.androidplot.Plot;
@@ -26,19 +31,21 @@ import com.androidplot.xy.XYPlot;
 import com.androidplot.xy.XYSeries;
 import com.androidplot.xy.XYStepMode;
 import com.craftapps.remotehorticulture.app.R;
+import com.craftapps.remotehorticulture.app.widgets.VerticalSeekBar;
 import com.parse.FindCallback;
 import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 
 import java.text.DecimalFormat;
+import java.text.Format;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
 public class OverviewFragment extends Fragment {
 
     private ProgressDialog progressDialog;
-    private XYPlot plot;
     final List<Double> parseSeries = new ArrayList<Double>();
 
     public OverviewFragment() {
@@ -48,6 +55,17 @@ public class OverviewFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View rootView = inflater.inflate(R.layout.fragment_overview, container, false);
+
+        initializeUIElements(rootView);
+
+        parseQuery();
+
+        return rootView;
     }
 
     @Override
@@ -74,119 +92,129 @@ public class OverviewFragment extends Fragment {
         switch (item.getItemId())
         {
             case R.id.action_refresh:
+                refreshFragment();
                 Toast.makeText(getActivity(), "Refreshed...", Toast.LENGTH_SHORT).show();
-                Fragment newFragment = new OverviewFragment();
-                FragmentTransaction transaction = getFragmentManager().beginTransaction();
-                transaction.replace(R.id.container, newFragment);
-                transaction.addToBackStack(null);
-                transaction.commit();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
     }
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_overview, container, false);
-
-        if (rootView != null) plot = (XYPlot) rootView.findViewById(R.id.mySimpleXYPlot);
-
-        getTemperatureList asyncTask = new getTemperatureList();
-        asyncTask.execute();
-
-        return rootView;
+    private void initializeUIElements(View view){
+        /*seekBarCurrentTemp = (VerticalSeekBar) (view != null ? view.findViewById(R.id.verticalSeekBar) : null);
+        textViewLatestTemp = (TextView) (view != null ? view.findViewById(R.id.textView_latestTemp) : null);
+        textViewLatestDate = (TextView) (view != null ? view.findViewById(R.id.textView_latestTempDate) : null);
+        textViewMinTemp = (TextView) (view != null ? view.findViewById(R.id.textView_minTemp) : null);
+        textViewMaxTemp = (TextView) (view != null ? view.findViewById(R.id.textView_maxTemp) : null);
+        webViewTemp = (WebView) (view != null ? view.findViewById(R.id.webView) : null);*/
     }
 
+    private void initializeDialogUIElements(View view) {
+        /*seekBarDialogMin = (VerticalSeekBar) view.findViewById(R.id.seekBar_min);
+        seekBarDialogMax = (VerticalSeekBar) view.findViewById(R.id.seekBar_max);
+        textViewDialogCurrentTemp = (TextView) view.findViewById(R.id.textViewCurrent);
+        editTextDialogMinTemp = (EditText) view.findViewById(R.id.editTextMin);
+        editTextDialogMaxTemp = (EditText) view.findViewById(R.id.editTextMax);*/
+    }
 
+    private void setGlobalValues(List<ParseObject> monitorDataList, List<ParseObject> automationControlList) {
+        currentTemp = monitorDataList.get(0).getNumber("fahrenheit");
+        Format formatter = new SimpleDateFormat("hh:mm a - EEE MMMM d");
+        currentTempDate = formatter.format(monitorDataList.get(0).getUpdatedAt());
+        minTemp = automationControlList.get(0).getNumber("TempMin");
+        maxTemp = automationControlList.get(0).getNumber("TempMax");
 
-    //------------------------------------------------------ ASYNC TASK -------------------------------------------------------------
-    private class getTemperatureList extends
-            AsyncTask<Void, String, List<Double>> {
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-
-            plot.setVisibility(View.INVISIBLE);
-
-            progressDialog = new ProgressDialog(getActivity());
-            progressDialog.setTitle("Please Wait..");
-            progressDialog.setMessage("Loading...");
-            progressDialog.setCancelable(false);
-            progressDialog.show();
+        for (ParseObject temp : monitorDataList) {
+            Log.i("query", "= " + temp.getNumber("fahrenheit"));
+            parseSeries.add(temp.getDouble("fahrenheit"));
         }
 
-        @Override
-        protected List<Double> doInBackground(final Void... params) {
-            ParseQuery<ParseObject> query = ParseQuery.getQuery("Temperature");
-            query.orderByAscending("updatedAt");
-            query.findInBackground(new FindCallback<ParseObject>() {
-                public void done(List<ParseObject> tempList, ParseException e) {
-                    if (e == null) {
-                        for (ParseObject temp : tempList) {
-                            Log.i("query", "= " + temp.getNumber("Temperature"));
-                            parseSeries.add(temp.getDouble("Temperature"));
+        applyValuesToUI();
+    }
+
+    private void applyValuesToUI() {
+        /*webViewTemp.setVerticalScrollBarEnabled(false);
+        WebSettings webSettings = webViewTemp.getSettings();
+        webSettings.setJavaScriptEnabled(true);
+        webSettings.setDomStorageEnabled(true);
+        loadChart();
+
+        seekBarCurrentTemp.setProgress(currentTemp.intValue());
+        seekBarCurrentTemp.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
+                seekBar.setProgress(currentTemp.intValue());
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+                seekBar.setProgress(currentTemp.intValue());
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                seekBar.setProgress(currentTemp.intValue());
+            }
+        });
+
+        textViewLatestTemp.setText(currentTemp.toString() + "° F");
+        textViewLatestDate.setText(currentTempDate);
+
+        textViewMinTemp.setText(minTemp + "° F");
+        textViewMaxTemp.setText(maxTemp + "° F");*/
+    }
+
+    private void preParseQuery() {
+        /*textViewLatestDate.setVisibility(View.INVISIBLE);
+        textViewLatestTemp.setVisibility(View.INVISIBLE);
+        textViewMaxTemp.setVisibility(View.INVISIBLE);
+        textViewMinTemp.setVisibility(View.INVISIBLE);*/
+
+        progressDialog = new ProgressDialog(getActivity());
+        progressDialog.setTitle("Please Wait..");
+        progressDialog.setMessage("Loading...");
+        progressDialog.setCancelable(false);
+        progressDialog.show();
+    }
+
+    private void parseQuery() {
+        preParseQuery();
+
+        ParseQuery<ParseObject> query = ParseQuery.getQuery("MonitorData");
+        query.orderByDescending("updatedAt");
+
+        query.findInBackground(new FindCallback<ParseObject>() {
+            public void done(final List<ParseObject> monitorDataList, ParseException e) {
+                if (e == null) {
+                    ParseQuery<ParseObject> automationControlQuery = ParseQuery.getQuery("AutomationControl");
+                    automationControlQuery.findInBackground(new FindCallback<ParseObject>() {
+                        public void done(List<ParseObject> automationControlList, ParseException e) {
+                            if (e == null) {
+                                setGlobalValues(monitorDataList, automationControlList);
+                                postParseQuery();
+                            }
                         }
-                        setupGraph();
-                    } else {
-                        Log.i("error", ": findInBackground");
-                    }
+                    });
+                } else {
+                    Log.i("error", ": findInBackground");
                 }
-            });
-
-            try { Thread.sleep(750); }
-            catch (InterruptedException e) { e.printStackTrace(); }
-
-            return parseSeries;
-        }
-
-        @Override
-        protected void onPostExecute(List<Double> result) {
-            super.onPostExecute(result);
-            progressDialog.dismiss();
-            plot.setVisibility(View.VISIBLE);
-        }
+            }
+        });
     }
 
-    private void setupGraph() {
-        XYSeries series3 = new SimpleXYSeries(parseSeries, SimpleXYSeries.ArrayFormat.Y_VALS_ONLY, "ParseSeries");
-
-        plot.getGraphWidget().getGridBackgroundPaint().setColor(Color.WHITE);
-        plot.getGraphWidget().getDomainOriginLinePaint().setColor(Color.WHITE);
-        plot.getGraphWidget().getRangeOriginLinePaint().setColor(Color.WHITE);
-
-        plot.setBorderStyle(Plot.BorderStyle.SQUARE, null, null);
-        plot.getBorderPaint().setStrokeWidth(1);
-        plot.getBorderPaint().setAntiAlias(false);
-        plot.getBorderPaint().setColor(Color.WHITE);
-
-        // setup our line fill paint to be a slightly transparent gradient:
-        Paint lineFill = new Paint();
-        lineFill.setAlpha(200);
-        lineFill.setShader(new LinearGradient(0, 0, 0, 250, Color.BLUE, Color.RED, Shader.TileMode.MIRROR));
-
-        LineAndPointFormatter formatter  = new LineAndPointFormatter(Color.rgb(0, 0,0), Color.BLUE, Color.RED, null);
-        formatter.setFillPaint(lineFill);
-        plot.getGraphWidget().setPaddingRight(2);
-        plot.addSeries(series3, formatter);
-
-        // customize our domain/range labels
-        plot.setDomainLabel("Interval");
-        plot.setRangeLabel("Temperature (F)");
-        plot.getLegendWidget().setVisible(false);
-
-        // get rid of decimal points in our range labels:
-        plot.setRangeValueFormat(new DecimalFormat("0"));
-        plot.setDomainValueFormat(new DecimalFormat("0"));
-
-        plot.getGraphWidget().setGridBackgroundPaint(null);
-
-        plot.setRangeStep(XYStepMode.INCREMENT_BY_VAL, 20);
-        plot.setDomainStep(XYStepMode.INCREMENT_BY_VAL, 1);
-        plot.setTicksPerDomainLabel(5);
-        plot.setRangeBoundaries(0, 160, BoundaryMode.FIXED);
-
-        plot.redraw();
+    private void postParseQuery() {
+        textViewLatestDate.setVisibility(View.VISIBLE);
+        textViewLatestTemp.setVisibility(View.VISIBLE);
+        textViewMaxTemp.setVisibility(View.VISIBLE);
+        textViewMinTemp.setVisibility(View.VISIBLE);
+        progressDialog.dismiss();
     }
 
+    private void refreshFragment(){
+        Fragment newFragment = new OverviewFragment();
+        FragmentTransaction transaction = getFragmentManager().beginTransaction();
+        transaction.replace(R.id.container, newFragment);
+        transaction.addToBackStack(null);
+        transaction.commit();
+    }
 }

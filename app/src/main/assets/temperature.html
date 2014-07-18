@@ -1,0 +1,211 @@
+<html>
+	<head>
+		<script src="./parse-1.2.19.js"></script>
+		<script type="text/javascript" src="./jsapi.js"></script>
+		<script type="text/javascript">
+			Parse.initialize("k9UH8HfBh2kObyiosc1Pu99Sf3L3zEk7mgGLvo3S", "InnSZEC8HqhQeA0A2LUjOOsJWxCeq8RheCWm7cjH");
+
+			var current = new Date();
+			var startDay = new Date();
+			startDay.setHours(0);
+			startDay.setMinutes(0);
+			startDay.setSeconds(0);
+			var endDay = new Date(startDay.getTime() + (1000 * 60 * 60 * 24));
+			
+			var startWeek = new Date(current.setDate(current.getDate() - current.getDay()));
+			startWeek.setHours(0);
+			startWeek.setMinutes(0);
+			startWeek.setSeconds(0);
+			var endWeek = new Date(current.setDate(current.getDate() - current.getDay()+7));
+			endWeek.setHours(0);
+			endWeek.setMinutes(0);
+			endWeek.setSeconds(0);
+			
+			var startMonth = new Date(current.getFullYear(), current.getMonth(), 1);
+			var endMonth = new Date(current.getFullYear(), current.getMonth() + 1, 0);
+			
+			function drawChart() {
+				document.getElementById("buttons_div").style.display = "none";
+				var data = new google.visualization.DataTable();
+				data.addColumn('datetime', 'Date');
+				data.addColumn('number', 'Temperature');
+				data.addColumn('number', 'min');
+				data.addColumn('number', 'max');
+				var queryThreshold = new Parse.Query("AutomationControl");
+				queryThreshold.find({
+					success: function(objects) {
+						if(objects != null) {
+							var min = objects[0].get("TempMin");
+							var max = objects[0].get("TempMax");
+
+							var query = new Parse.Query("MonitorData");
+							query.descending("createdAt");
+							query.limit(1000);
+							query.find({
+								success: function(objects) {
+									if(objects != null){
+										var size = Object.keys(objects).length;
+										console.log("size=" + size);
+										data.addRows(size);
+										for(var i=0; i<size; i++) {
+											var value = objects[i].get("fahrenheit");
+											var date = objects[i].createdAt;
+											data.setValue(i, 0, date);
+											data.setValue(i, 1, value);
+											data.setValue(i, 2, min);
+											data.setValue(i, 3, max);
+										}
+										zoomLastDay();								
+									}
+								},
+								error: function() {
+									window.alert("error");
+								}
+							});
+						}
+					},
+					error: function() {
+						window.alert("error");
+					}
+				});
+			
+				var chart = new google.visualization.ChartWrapper({
+					chartType: 'AreaChart',
+					containerId: 'chart_div',
+					chartArea:{left:0,top:0,width:"100%",height:"100%"},
+					options : {
+						curveType: 'function',
+						lineWidth: 1,
+						legend: { position: 'none', alignment: "center" },
+						backgroundColor: '#FDFDFD',
+						series: {
+							0: { color: "#000000", lineWidth: 2, visibleInLegend: false },
+							1: { color: "#0000FF", type: "line", enableInteractivity: false },
+							2: { color: "#FF0000", type: "line", enableInteractivity: false, },
+						},
+						vAxis: {
+							format:"#'\u00B0F'",
+							titleTextStyle: {color: '#CCC'},
+							viewWindowMode: 'explicit',
+							viewWindow: {
+								max: 120,
+								min: 30,
+							},
+						},
+						hAxis: {
+							titleTextStyle: {color: '#CCC'},
+							textStyle: {fontSize: 8},
+							format:'EEE \nMMM/dd \nha',
+						},
+						explorer: {
+							axis: 'horizontal',
+							keepInBounds: true,
+						}
+					},
+				});
+		
+				var control = new google.visualization.ControlWrapper({
+					controlType: 'ChartRangeFilter',
+					containerId: 'control_div',
+					options: {
+						filterColumnIndex: 0,
+						ui: {
+							chartOptions: {
+								height: 50,
+								chartArea: {
+									width:"80%", height:"100%"
+								}
+							},
+							minRangeSize: 86400000
+						}
+					},
+					state: {
+						range: {
+							start: startMonth, 
+							end: endMonth
+						}
+					}
+				});
+				
+				var dashboard = new google.visualization.Dashboard(document.querySelector('#dashboard_div'));
+				dashboard.bind([control], [chart]);
+				dashboard.draw(data);			
+				
+				function zoomLastDay () {
+					var range = data.getColumnRange(0);
+					control.setState({
+						range: {
+							start: startDay,
+							end: endDay
+						}
+					});		
+					chart.setOption('hAxis.viewWindow.min', startDay);
+					chart.setOption('hAxis.viewWindow.max', endDay);
+					control.draw();
+				}
+				function zoomLastWeek () {
+					var range = data.getColumnRange(0);
+					control.setState({
+						range: {
+							start: startWeek,
+							end: endWeek
+						}
+					});
+					chart.setOption('hAxis.viewWindow.min', startWeek);
+					chart.setOption('hAxis.viewWindow.max', endWeek);
+					control.draw();
+				}
+				function zoomLastMonth () {
+					var range = data.getColumnRange(0);
+					control.setState({
+						range: {
+							start: startMonth,
+							end: endMonth
+						}
+					});
+					chart.setOption('hAxis.viewWindow.min', startMonth);
+					chart.setOption('hAxis.viewWindow.max', endMonth);
+					control.draw();
+				}
+		
+				var runOnce = google.visualization.events.addListener(dashboard, 'ready', function () {
+					google.visualization.events.removeListener(runOnce);
+					
+					if (document.addEventListener) {
+						document.querySelector('#lastDay').addEventListener('click', zoomLastDay);
+						document.querySelector('#lastWeek').addEventListener('click', zoomLastWeek);
+						document.querySelector('#lastMonth').addEventListener('click', zoomLastMonth);
+					}
+					else if (document.attachEvent) {
+						document.querySelector('#lastDay').attachEvent('onclick', zoomLastDay);
+						document.querySelector('#lastWeek').attachEvent('onclick', zoomLastWeek);
+						document.querySelector('#lastMonth').attachEvent('onclick', zoomLastMonth);
+					}
+					else {
+						document.querySelector('#lastDay').onclick = zoomLastDay;
+						document.querySelector('#lastWeek').onclick = zoomLastWeek;
+						document.querySelector('#lastMonth').onclick = zoomLastMonth;
+					}
+				});
+				document.getElementById("loading").style.display = "none";
+				document.getElementById("buttons_div").style.display = "initial";
+			}
+			google.load('visualization', '1', {packages:['controls'], callback: drawChart});
+		</script>
+	</head>
+	
+	<body bgcolor="#FDFDFD">
+		<div align="center">
+			<img id="loading" src="loading.gif" alt="Loading..." style="width: 100%;max-height: 100%" />
+			<div id="dashboard_div"> 
+				<div id="chart_div" style="position: relative; top: -35px; "></div>
+				<div id="control_div"></div>
+				<div id="buttons_div">
+					<input id="lastDay" type="button" value="Today" />
+					<input id="lastWeek" type="button" value="This Week" />
+					<input id="lastMonth" type="button" value="This Month" />
+				</div>
+			</div>
+		</div>
+	</body>
+</html>

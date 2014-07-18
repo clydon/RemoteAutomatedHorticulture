@@ -1,8 +1,13 @@
 package com.craftapps.remotehorticulture.app;
 
 import android.app.Application;
-        import com.parse.Parse;
+
+import com.parse.Parse;
+import com.parse.ParseCloud;
+import com.parse.ParseException;
 import com.parse.PushService;
+
+import java.util.HashMap;
 
 public class App extends Application {
 
@@ -13,7 +18,14 @@ public class App extends Application {
 
         PushService.setDefaultPushCallback(this, MainActivity.class);
 
+        PushService.subscribe(getBaseContext(), "Test", MainActivity.class);
 
+        try {
+            ParseCloud.callFunction("ControlHubOnline", new HashMap<String, Object>());
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
 
     }
+
 }

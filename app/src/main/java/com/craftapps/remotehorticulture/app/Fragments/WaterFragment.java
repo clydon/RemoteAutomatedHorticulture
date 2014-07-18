@@ -266,7 +266,7 @@ public class WaterFragment extends Fragment {
         waterPlot.setRangeStep(XYStepMode.INCREMENT_BY_VAL, 20);
         waterPlot.setDomainStep(XYStepMode.INCREMENT_BY_VAL, 1);
         waterPlot.setTicksPerDomainLabel(5);
-        waterPlot.setRangeBoundaries(0, 160, BoundaryMode.FIXED);
+        waterPlot.setRangeBoundaries(0, 100, BoundaryMode.FIXED);
 
         waterPlot.redraw();
         Log.i("success", ": setupGraph/redraw");

@@ -2,10 +2,7 @@ package com.craftapps.remotehorticulture.app.Fragments;
 
 
 import android.app.ProgressDialog;
-import android.graphics.Color;
-import android.graphics.LinearGradient;
-import android.graphics.Paint;
-import android.graphics.Shader;
+import android.content.res.AssetManager;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
@@ -16,17 +13,12 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.androidplot.Plot;
-import com.androidplot.xy.BoundaryMode;
-import com.androidplot.xy.LineAndPointFormatter;
-import com.androidplot.xy.SimpleXYSeries;
-import com.androidplot.xy.XYPlot;
-import com.androidplot.xy.XYSeries;
-import com.androidplot.xy.XYStepMode;
 import com.craftapps.remotehorticulture.app.R;
 import com.craftapps.remotehorticulture.app.widgets.VerticalSeekBar;
 import com.parse.FindCallback;
@@ -34,7 +26,9 @@ import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 
-import java.text.DecimalFormat;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -43,12 +37,12 @@ import java.util.List;
 
 public class HumidityFragment extends Fragment {
 
-    private XYPlot plot;
     private TextView textViewLatestHumid;
     private TextView textViewLatestDate;
     private TextView textViewMinHumid;
     private TextView textViewMaxHumid;
     private VerticalSeekBar seekBarCurrentHumid;
+    private WebView webViewHumid;
 
     final List<Double> parseSeries = new ArrayList<Double>();
     private ProgressDialog progressDialog;
@@ -112,22 +106,22 @@ public class HumidityFragment extends Fragment {
     }
 
     private void initializeUIElements(View view){
-        plot = (XYPlot) (view != null ? view.findViewById(R.id.humidityPlot) : null);
         seekBarCurrentHumid = (VerticalSeekBar) (view != null ? view.findViewById(R.id.verticalSeekBar) : null);
         textViewLatestHumid = (TextView) (view != null ? view.findViewById(R.id.textView_latestHumid) : null);
         textViewLatestDate = (TextView) (view != null ? view.findViewById(R.id.textView_latestHumidDate) : null);
         textViewMinHumid = (TextView) (view != null ? view.findViewById(R.id.textView_minHumid) : null);
         textViewMaxHumid = (TextView) (view != null ? view.findViewById(R.id.textView_maxHumid) : null);
+        webViewHumid = (WebView) (view != null ? view.findViewById(R.id.webView) : null);
     }
 
     private void setGlobalValues(List<ParseObject> humidList) {
-        currentHumid = humidList.get(0).getNumber("Humidity");
+        currentHumid = humidList.get(0).getNumber("humidity");
         Format formatter = new SimpleDateFormat("hh:mm a - EEE MMMM d");
         currentHumidDate = formatter.format(humidList.get(0).getUpdatedAt());
 
         for (ParseObject humid : humidList) {
-            Log.i("query", "= " + humid.getNumber("Humidity"));
-            parseSeries.add(humid.getDouble("Humidity"));
+            Log.i("query", "= " + humid.getNumber("humidity"));
+            parseSeries.add(humid.getDouble("humidity"));
         }
         maxHumid = Collections.max(parseSeries);
         minHumid = Collections.min(parseSeries);
@@ -136,7 +130,11 @@ public class HumidityFragment extends Fragment {
     }
 
     private void applyValuesToUI() {
-        setupGraph();
+        webViewHumid.setVerticalScrollBarEnabled(false);
+        WebSettings webSettings = webViewHumid.getSettings();
+        webSettings.setJavaScriptEnabled(true);
+        webSettings.setDomStorageEnabled(true);
+        loadChart();
 
         seekBarCurrentHumid.setProgress(currentHumid.intValue());
         seekBarCurrentHumid.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -167,49 +165,29 @@ public class HumidityFragment extends Fragment {
         textViewMaxHumid.setText(maxHumid + "%");
     }
 
-    private void setupGraph() {
-        XYSeries series3 = new SimpleXYSeries(parseSeries, SimpleXYSeries.ArrayFormat.Y_VALS_ONLY, "ParseSeries");
+    private void loadChart() {
+        String content = null;
+        try {
+            AssetManager assetManager = getActivity().getAssets();
+            InputStream in = assetManager.open("humidity.html");
+            byte[] bytes = readFully(in);
+            content = new String(bytes, "UTF-8");
+        } catch (IOException e){
+            Log.e("loadChart", "An error occurred.", e);
+        }
+        webViewHumid.loadDataWithBaseURL("file:///android_asset/", content, "text/html", "utf-8", null);
+    }
 
-        plot.getGraphWidget().getGridBackgroundPaint().setColor(Color.WHITE);
-        plot.getGraphWidget().getDomainOriginLinePaint().setColor(Color.WHITE);
-        plot.getGraphWidget().getRangeOriginLinePaint().setColor(Color.WHITE);
-
-        plot.setBorderStyle(Plot.BorderStyle.SQUARE, null, null);
-        plot.getBorderPaint().setStrokeWidth(1);
-        plot.getBorderPaint().setAntiAlias(false);
-        plot.getBorderPaint().setColor(Color.WHITE);
-
-        // setup our line fill paint to be a slightly transparent gradient:
-        Paint lineFill = new Paint();
-        lineFill.setAlpha(200);
-        lineFill.setShader(new LinearGradient(0, 0, 0, 250, Color.BLUE, Color.RED, Shader.TileMode.MIRROR));
-
-        LineAndPointFormatter formatter  = new LineAndPointFormatter(Color.rgb(0, 0,0), Color.BLUE, Color.RED, null);
-        formatter.setFillPaint(lineFill);
-        plot.getGraphWidget().setPaddingRight(2);
-        plot.addSeries(series3, formatter);
-
-        // customize our domain/range labels
-        plot.setDomainLabel("Interval");
-        plot.setRangeLabel("Humidity (%)");
-        plot.getLegendWidget().setVisible(false);
-
-        // get rid of decimal points in our range labels:
-        plot.setRangeValueFormat(new DecimalFormat("0"));
-        plot.setDomainValueFormat(new DecimalFormat("0"));
-
-        plot.getGraphWidget().setGridBackgroundPaint(null);
-
-        plot.setRangeStep(XYStepMode.INCREMENT_BY_VAL, 20);
-        plot.setDomainStep(XYStepMode.INCREMENT_BY_VAL, 1);
-        plot.setTicksPerDomainLabel(5);
-        plot.setRangeBoundaries(0, 160, BoundaryMode.FIXED);
-
-        plot.redraw();
+    private static byte[] readFully(InputStream in) throws IOException {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        byte[] buffer = new byte[1024];
+        for (int count; (count = in.read(buffer)) != -1; ) {
+            out.write(buffer, 0, count);
+        }
+        return out.toByteArray();
     }
 
     private void preParseQuery() {
-        plot.setVisibility(View.INVISIBLE);
         textViewLatestDate.setVisibility(View.INVISIBLE);
         textViewLatestHumid.setVisibility(View.INVISIBLE);
         textViewMaxHumid.setVisibility(View.INVISIBLE);
@@ -225,20 +203,12 @@ public class HumidityFragment extends Fragment {
     private void parseQuery() {
         preParseQuery();
 
-        ParseQuery<ParseObject> query = ParseQuery.getQuery("Humidity");
+        ParseQuery<ParseObject> query = ParseQuery.getQuery("MonitorData");
         query.orderByDescending("updatedAt");
         query.findInBackground(new FindCallback<ParseObject>() {
             public void done(final List<ParseObject> humidList, ParseException e) {
                 if (e == null) {
                     setGlobalValues(humidList);
-                        /*ParseQuery<ParseObject> automationControlQuery = ParseQuery.getQuery("AutomationControl");
-                        automationControlQuery.findInBackground(new FindCallback<ParseObject>() {
-                            public void done(List<ParseObject> automationControlList, ParseException e) {
-                                if (e == null) {
-                                    setGlobalValues(humidList, automationControlList);
-                                }
-                            }
-                        });*/
                     postParseQuery();
                 } else {
                     Log.i("error", ": findInBackground");
@@ -248,7 +218,6 @@ public class HumidityFragment extends Fragment {
     }
 
     private void postParseQuery() {
-        plot.setVisibility(View.VISIBLE);
         textViewLatestDate.setVisibility(View.VISIBLE);
         textViewLatestHumid.setVisibility(View.VISIBLE);
         textViewMaxHumid.setVisibility(View.VISIBLE);

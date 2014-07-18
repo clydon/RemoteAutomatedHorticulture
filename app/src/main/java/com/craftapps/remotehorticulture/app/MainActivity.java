@@ -12,8 +12,14 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.support.v4.widget.DrawerLayout;
+import android.widget.Toast;
 
+import com.parse.FunctionCallback;
 import com.parse.ParseAnalytics;
+import com.parse.ParseCloud;
+import com.parse.ParseException;
+
+import java.util.HashMap;
 
 
 public class MainActivity extends ActionBarActivity
@@ -22,11 +28,20 @@ public class MainActivity extends ActionBarActivity
     private NavigationDrawerFragment mNavigationDrawerFragment;
     private CharSequence mTitle;
 
+    @Override
+    public void onResume(){
+        super.onResume();
+        ParseCloud.callFunctionInBackground("ControlHubOnline", new HashMap<String, Object>(), new FunctionCallback<Object>() {
+            @Override
+            public void done(Object o, ParseException e) {
+            }
+        });
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        
+
         ParseAnalytics.trackAppOpened(getIntent());
 
         setContentView(R.layout.activity_main);
