@@ -2,14 +2,13 @@
 
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:id="@+id/">
+    android:layout_height="match_parent">
 
     <com.craftapps.remotehorticulture.app.widgets.VerticalSeekBar
         android:layout_width="25dp"
         android:layout_height="200dp"
         android:max="120"
-        android:id="@+id/tempSeekBar"
+        android:id="@+id/seekBarTemperature"
         android:progress="50"
         android:thumb="@android:color/transparent"
         android:indeterminate="false"
@@ -19,8 +18,8 @@
     <com.craftapps.remotehorticulture.app.widgets.VerticalSeekBar
         android:layout_width="25dp"
         android:layout_height="200dp"
-        android:max="120"
-        android:id="@+id/humidSeekBar"
+        android:max="100"
+        android:id="@+id/seekBarHumidity"
         android:progress="50"
         android:thumb="@android:color/transparent"
         android:indeterminate="false"
@@ -32,12 +31,12 @@
         android:layout_height="100dp"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="100 F"
-        android:id="@+id/textView_overviewTemp"
+        android:id="@+id/textViewOverviewTemp"
         android:gravity="bottom|left"
         android:textSize="45dp"
         android:typeface="serif"
         android:layout_alignParentTop="true"
-        android:layout_toRightOf="@+id/tempSeekBar"
+        android:layout_toRightOf="@+id/seekBarTemperature"
         android:paddingLeft="16dp"
         android:paddingTop="16dp"
         android:paddingRight="16dp" />
@@ -47,23 +46,23 @@
         android:layout_height="100dp"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="100 %"
-        android:id="@+id/textView_overviewHumid"
+        android:id="@+id/textViewOverviewHumid"
         android:gravity="bottom|right"
         android:textSize="45dp"
         android:typeface="serif"
         android:layout_alignParentTop="true"
-        android:layout_toLeftOf="@+id/humidSeekBar"
+        android:layout_toLeftOf="@+id/seekBarHumidity"
         android:paddingLeft="16dp"
         android:paddingTop="16dp"
         android:paddingRight="16dp"
-        android:layout_alignBottom="@+id/textView_overviewTemp" />
+        android:layout_alignBottom="@+id/textViewOverviewTemp" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="50dp"
         android:textAppearance="?android:attr/textAppearanceSmall"
         android:text="Date"
-        android:id="@+id/textView_latestTempDate"
+        android:id="@+id/textViewTemperatureDate"
         android:gravity="center"
         android:typeface="serif"
         android:layout_alignParentTop="true"
@@ -78,18 +77,138 @@
         android:id="@+id/toggleButtonLighting"
         android:textOn=""
         android:textOff=""
-        android:layout_below="@+id/textView_overviewTemp"
+        android:layout_below="@+id/textViewOverviewTemp"
         android:layout_centerHorizontal="true" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="Grow Cycle:"
+        android:text="Grow Light Cycle:"
         android:id="@+id/textView3"
         android:layout_below="@+id/toggleButtonLighting"
         android:layout_alignParentStart="true"
-        android:padding="16dp" />
+        android:textStyle="bold"
+        android:paddingLeft="16dp"
+        android:paddingTop="16dp"
+        android:paddingRight="16dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="Light:"
+        android:id="@+id/textView4"
+        android:paddingLeft="16dp"
+        android:paddingRight="16dp"
+        android:layout_below="@+id/textView3"
+        android:layout_alignParentStart="true"
+        android:paddingBottom="16dp"
+        android:paddingTop="16dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="16 hrs"
+        android:id="@+id/textViewLightHours"
+        android:paddingBottom="16dp"
+        android:typeface="serif"
+        android:textSize="20dp"
+        android:paddingTop="12dp"
+        android:layout_below="@+id/textView3"
+        android:layout_toRightOf="@+id/textView7" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="Dark:"
+        android:id="@+id/textView2"
+        android:paddingLeft="16dp"
+        android:paddingRight="16dp"
+        android:paddingBottom="16dp"
+        android:paddingTop="16dp"
+        android:layout_below="@+id/textView3"
+        android:layout_toLeftOf="@+id/textViewWateringDuration" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="08 hrs"
+        android:id="@+id/textViewDarkHours"
+        android:paddingBottom="16dp"
+        android:typeface="serif"
+        android:textSize="20dp"
+        android:paddingTop="12dp"
+        android:layout_alignTop="@+id/textView2"
+        android:layout_toRightOf="@+id/textView2" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="Watering Cycle:"
+        android:id="@+id/textView6"
+        android:textStyle="bold"
+        android:layout_below="@+id/textView4"
+        android:layout_alignParentStart="true"
+        android:paddingLeft="16dp"
+        android:paddingTop="16dp"
+        android:paddingRight="16dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="Every:"
+        android:id="@+id/textView7"
+        android:paddingLeft="16dp"
+        android:paddingRight="16dp"
+        android:paddingBottom="16dp"
+        android:layout_below="@+id/textView6"
+        android:layout_alignParentStart="true"
+        android:paddingTop="16dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="08 hrs"
+        android:id="@+id/textViewWateringCycle"
+        android:paddingBottom="16dp"
+        android:textSize="20dp"
+        android:typeface="serif"
+        android:paddingTop="12dp"
+        android:layout_alignTop="@+id/textView7"
+        android:layout_toRightOf="@+id/textView7" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="Durat:ion"
+        android:id="@+id/textView9"
+        android:paddingLeft="16dp"
+        android:paddingRight="16dp"
+        android:paddingBottom="16dp"
+        android:paddingTop="16dp"
+        android:layout_below="@+id/textView6"
+        android:layout_toRightOf="@+id/textViewOverviewTemp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="05 mins"
+        android:id="@+id/textViewWateringDuration"
+        android:paddingBottom="16dp"
+        android:textSize="20dp"
+        android:typeface="serif"
+        android:paddingTop="12dp"
+        android:layout_alignTop="@+id/textView9"
+        android:layout_toRightOf="@+id/textView9" />
 
 
 </RelativeLayout>

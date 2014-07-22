@@ -122,7 +122,7 @@ public class TemperatureFragment extends Fragment {
     private void initializeUIElements(View view){
         seekBarCurrentTemp = (VerticalSeekBar) (view != null ? view.findViewById(R.id.verticalSeekBar) : null);
         textViewLatestTemp = (TextView) (view != null ? view.findViewById(R.id.textView_latestTemp) : null);
-        textViewLatestDate = (TextView) (view != null ? view.findViewById(R.id.textView_latestTempDate) : null);
+        textViewLatestDate = (TextView) (view != null ? view.findViewById(R.id.textViewTemperatureDate) : null);
         textViewMinTemp = (TextView) (view != null ? view.findViewById(R.id.textView_minTemp) : null);
         textViewMaxTemp = (TextView) (view != null ? view.findViewById(R.id.textView_maxTemp) : null);
         webViewTemp = (WebView) (view != null ? view.findViewById(R.id.webView) : null);

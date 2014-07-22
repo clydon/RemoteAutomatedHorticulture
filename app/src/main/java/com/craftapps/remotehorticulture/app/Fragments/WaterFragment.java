@@ -19,7 +19,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -32,6 +31,7 @@ import com.androidplot.xy.XYPlot;
 import com.androidplot.xy.XYSeries;
 import com.androidplot.xy.XYStepMode;
 import com.craftapps.remotehorticulture.app.R;
+import com.craftapps.remotehorticulture.app.widgets.MultiStateToggleButton;
 import com.craftapps.remotehorticulture.app.widgets.VerticalSeekBar;
 import com.parse.FindCallback;
 import com.parse.ParseException;
@@ -42,7 +42,11 @@ import java.text.DecimalFormat;
 import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class WaterFragment extends Fragment {
 
@@ -52,20 +56,22 @@ public class WaterFragment extends Fragment {
     private VerticalSeekBar seekBarCurrentWater;
     private ProgressDialog progressDialog;
 
-    private CheckBox checkBoxSunday;
-    private CheckBox checkBoxMonday;
-    private CheckBox checkBoxTuesday;
-    private CheckBox checkBoxWednesday;
-    private CheckBox checkBoxThursday;
-    private CheckBox checkBoxFriday;
-    private CheckBox checkBoxSaturday;
-    private CheckBox checkBoxRepeat;
-    private Button buttonStartTime; //todo
-    private Button buttonEndTime; //todo
+    private Button buttonTimeIncrease;
+    private Button buttonTimeDecrease;
+    private Button buttonDurIncrease;
+    private Button buttonDurDecrease;
+    private TextView textViewTime;
+    private TextView textViewDur;
+    private TextView textViewDurTime;
+    private MultiStateToggleButton multiToggleWater;
 
     final List<Double> parseSeries = new ArrayList<Double>();
     private Number currentWater;
     private String currentWaterDate;
+
+    private int waterDuration = 5;
+    private int waterTimePerDay = 4;
+    private int toggleValue = 0;
 
     public WaterFragment() {
     }
@@ -131,18 +137,14 @@ public class WaterFragment extends Fragment {
     }
 
     private void initializeDialogUIElements(View view) {
-        checkBoxSunday = (CheckBox) view.findViewById(R.id.checkBox_Sunday);
-        checkBoxMonday = (CheckBox) view.findViewById(R.id.checkBox_Monday);
-        checkBoxTuesday = (CheckBox) view.findViewById(R.id.checkBox_Tuesday);
-        checkBoxWednesday = (CheckBox) view.findViewById(R.id.checkBox_Wednesday);
-        checkBoxThursday = (CheckBox) view.findViewById(R.id.checkBox_Thursday);
-        checkBoxFriday = (CheckBox) view.findViewById(R.id.checkBox_Friday);
-        checkBoxSaturday = (CheckBox) view.findViewById(R.id.checkBox_Saturday);
-
-        checkBoxRepeat = (CheckBox) view.findViewById(R.id.checkBox_Repeat);
-
-        buttonStartTime = (Button) view.findViewById(R.id.buttonStartTime);
-        buttonEndTime = (Button) view.findViewById(R.id.buttonEndTime);
+        textViewDur = (TextView) view.findViewById(R.id.textViewDuration);
+        textViewDurTime = (TextView) view.findViewById(R.id.textViewDurationTime);
+        textViewTime = (TextView) view.findViewById(R.id.textViewTime);
+        buttonDurDecrease = (Button) view.findViewById(R.id.buttonDurationDecrease);
+        buttonDurIncrease = (Button) view.findViewById(R.id.buttonDurationIncrease);
+        buttonTimeDecrease = (Button) view.findViewById(R.id.buttonTimeDecrease);
+        buttonTimeIncrease = (Button) view.findViewById(R.id.buttonTimeIncrease);
+        multiToggleWater = (MultiStateToggleButton) view.findViewById(R.id.multiToggleWatering);
     }
 
     private void startWaterDialog() {
@@ -154,7 +156,7 @@ public class WaterFragment extends Fragment {
 
         final AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
         alert.setView(waterDialog)
-                .setPositiveButton("Add",
+                .setPositiveButton("Set",
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int whichButton) { //todo save schedule to Parse
                                 /*ParseQuery<ParseObject> automationControlQuery = ParseQuery.getQuery("AutomationControl");
@@ -178,14 +180,49 @@ public class WaterFragment extends Fragment {
         alert.show();
     }
 
-    private void setGlobalValues(List<ParseObject> waterList) {
-        currentWater = waterList.get(0).getNumber("waterLevel");
+    private void setGlobalValues(String scheduleId, Number scheduleOverrideState, List<ParseObject> eventList, List<ParseObject> monitorDataList) {
+        switch (scheduleOverrideState.intValue()){
+            case 0: toggleValue = 1;
+                break;
+            case 1: toggleValue = 2;
+                break;
+            case 2: toggleValue = 0;
+                break;
+        }
+
+        Date startDate = eventList.get(0).getDate("FirstOccurrence");
+        Date endDate = eventList.get(1).getDate("FirstOccurrence");
+        long duration  = startDate.getTime() - endDate.getTime();
+
+        waterDuration = (int) TimeUnit.MILLISECONDS.toMinutes(duration);
+        waterTimePerDay = 86400/eventList.get(0).getInt("IntervalSeconds");
+
+        //12 times per day (every two hours == 7200 seconds)
+        //duration 5 minutes (2 events made First Occurrence differs by 5 minutes)
+
+        //9 times per day (Interval = 86400/<times per day>)
+        //
+        /*int interval = 7200;
+        Calendar midnight = new GregorianCalendar();
+        midnight.set(Calendar.HOUR_OF_DAY, 0);
+        midnight.set(Calendar.MINUTE, 0);
+        midnight.set(Calendar.SECOND, 0);
+        midnight.set(Calendar.MILLISECOND, 0);
+        Date fireOn = midnight.getTime();
+
+        midnight.add(Calendar.SECOND, interval);
+        Date fireOff = midnight.getTime();*/
+
+
+
+
+        currentWater = monitorDataList.get(0).getNumber("waterLevel");
         Format formatter = new SimpleDateFormat("hh:mm a - EEE MMMM d");
-        currentWaterDate = formatter.format(waterList.get(0).getUpdatedAt());
+        currentWaterDate = formatter.format(monitorDataList.get(0).getUpdatedAt());
         Log.i("currentWater", "= " + currentWater);
         Log.i("currentWaterDate", "= " + currentWaterDate);
 
-        for (ParseObject water : waterList) {
+        for (ParseObject water : monitorDataList) {
             Log.i("query", "= " + water.getDouble("waterLevel"));
             parseSeries.add(water.getDouble("waterLevel"));
         }
@@ -219,15 +256,41 @@ public class WaterFragment extends Fragment {
     }
 
     private void applyValuesToDialogUI() {
-        checkBoxSunday.setChecked(false);
-        checkBoxMonday.setChecked(false);
-        checkBoxTuesday.setChecked(false);
-        checkBoxWednesday.setChecked(false);
-        checkBoxThursday.setChecked(false);
-        checkBoxFriday.setChecked(false);
-        checkBoxSaturday.setChecked(false);
+        textViewDur.setText(String.valueOf(waterDuration) + " mins");
+        textViewTime.setText(String.valueOf(waterTimePerDay));
+        multiToggleWater.setValue(toggleValue);
 
-        checkBoxRepeat.setChecked(false);
+        buttonDurDecrease.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(waterDuration > 0) waterDuration--;
+                textViewDur.setText(String.valueOf(waterDuration) + " mins");
+            }
+        });
+        buttonDurIncrease.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                waterDuration++;
+                textViewDur.setText(String.valueOf(waterDuration) + " mins");
+            }
+        });
+
+        buttonTimeDecrease.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(waterTimePerDay > 0) waterTimePerDay--;
+                textViewTime.setText(String.valueOf(waterTimePerDay));
+                textViewDurTime.setText("EVERY " + (1440/ waterTimePerDay)/60 + " HOURS " + (1440/ waterTimePerDay)%60 + " MINUTES");
+            }
+        });
+        buttonTimeIncrease.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                waterTimePerDay++;
+                textViewTime.setText(String.valueOf(waterTimePerDay));
+                textViewDurTime.setText("EVERY " + (1440/ waterTimePerDay)/60 + " HOURS " + (1440/ waterTimePerDay)%60 + " MINUTES");
+            }
+        });
     }
 
     private void setupGraph() {
@@ -287,14 +350,34 @@ public class WaterFragment extends Fragment {
     private void parseQuery() {
         preParseQuery();
 
-        ParseQuery<ParseObject> query = ParseQuery.getQuery("MonitorData");
-        query.orderByDescending("updatedAt");
+        ParseQuery<ParseObject> query = ParseQuery.getQuery("Schedule");
+        query.whereEqualTo("Type", 2);
 
         query.findInBackground(new FindCallback<ParseObject>() {
-            public void done(final List<ParseObject> waterList, ParseException e) {
+            public void done(final List<ParseObject> scheduleList, ParseException e) {
                 if (e == null) {
-                    setGlobalValues(waterList);
-                    postParseQuery();
+                    final String scheduleId = scheduleList.get(0).getObjectId();
+                    //final String scheduleId = "azc4J8lBGW";
+                    final Number scheduleOverrideState = scheduleList.get(0).getNumber("OverrideState");
+                    ParseQuery<ParseObject> eventQuery = ParseQuery.getQuery("Event");
+                    eventQuery.whereEqualTo("ScheduleId", scheduleId);
+                    eventQuery.findInBackground(new FindCallback<ParseObject>() {
+                        public void done(final List<ParseObject> eventList, ParseException e) {
+                            if (e == null) {
+                                ParseQuery<ParseObject> monitorDataQuery = ParseQuery.getQuery("MonitorData");
+                                monitorDataQuery.orderByDescending("updatedAt");
+                                monitorDataQuery.findInBackground(new FindCallback<ParseObject>() {
+                                    public void done(final List<ParseObject> monitorDataList, ParseException e) {
+                                        if (e == null) {
+                                            setGlobalValues(scheduleId, scheduleOverrideState, eventList, monitorDataList);
+                                            postParseQuery();
+                                        }
+                                    }
+                                });
+                            }
+                        }
+                    });
+
                     Log.i("success", ": findInBackground");
                 } else {
                     Log.i("error", ": findInBackground");

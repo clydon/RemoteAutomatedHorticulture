@@ -118,7 +118,7 @@ public class OverviewFragment extends Fragment {
     }
 
     private void setGlobalValues(List<ParseObject> monitorDataList, List<ParseObject> automationControlList) {
-        currentTemp = monitorDataList.get(0).getNumber("fahrenheit");
+        /*currentTemp = monitorDataList.get(0).getNumber("fahrenheit");
         Format formatter = new SimpleDateFormat("hh:mm a - EEE MMMM d");
         currentTempDate = formatter.format(monitorDataList.get(0).getUpdatedAt());
         minTemp = automationControlList.get(0).getNumber("TempMin");
@@ -129,7 +129,7 @@ public class OverviewFragment extends Fragment {
             parseSeries.add(temp.getDouble("fahrenheit"));
         }
 
-        applyValuesToUI();
+        applyValuesToUI();*/
     }
 
     private void applyValuesToUI() {
@@ -203,10 +203,10 @@ public class OverviewFragment extends Fragment {
     }
 
     private void postParseQuery() {
-        textViewLatestDate.setVisibility(View.VISIBLE);
+        /*textViewLatestDate.setVisibility(View.VISIBLE);
         textViewLatestTemp.setVisibility(View.VISIBLE);
         textViewMaxTemp.setVisibility(View.VISIBLE);
-        textViewMinTemp.setVisibility(View.VISIBLE);
+        textViewMinTemp.setVisibility(View.VISIBLE);*/
         progressDialog.dismiss();
     }
 

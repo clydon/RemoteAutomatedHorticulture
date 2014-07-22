@@ -87,7 +87,7 @@
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceSmall"
         android:text="Max Temp"
-        android:id="@+id/textView"
+        android:id="@+id/textViewLightHours"
         android:layout_below="@+id/editTextMin"
         android:layout_alignRight="@+id/editTextMax"
         android:layout_alignEnd="@+id/editTextMax"

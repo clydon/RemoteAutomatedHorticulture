@@ -35,7 +35,7 @@
         android:layout_height="50dp"
         android:textAppearance="?android:attr/textAppearanceSmall"
         android:text="Date"
-        android:id="@+id/textView_latestTempDate"
+        android:id="@+id/textViewTemperatureDate"
         android:gravity="center"
         android:typeface="serif"
         android:layout_above="@+id/textView_minTempLabel"
@@ -81,8 +81,8 @@
         android:padding="16dp"
         android:typeface="serif"
         android:layout_below="@+id/textView_latestTemp"
-        android:layout_alignLeft="@+id/textView_latestTempDate"
-        android:layout_alignStart="@+id/textView_latestTempDate" />
+        android:layout_alignLeft="@+id/textViewTemperatureDate"
+        android:layout_alignStart="@+id/textViewTemperatureDate" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -119,8 +119,8 @@
         android:gravity="center_horizontal|top"
         android:typeface="serif"
         android:layout_below="@+id/textView_maxTempLabel"
-        android:layout_alignRight="@+id/textView_latestTempDate"
-        android:layout_alignEnd="@+id/textView_latestTempDate"
+        android:layout_alignRight="@+id/textViewTemperatureDate"
+        android:layout_alignEnd="@+id/textViewTemperatureDate"
         android:layout_alignLeft="@+id/textView_maxTempLabel"
         android:layout_alignStart="@+id/textView_maxTempLabel"
         android:paddingBottom="25dp" />

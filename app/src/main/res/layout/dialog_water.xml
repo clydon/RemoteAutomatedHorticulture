@@ -6,7 +6,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Add Water Feeding"
+        android:text="Water Feeding"
         android:id="@+id/textView4"
         android:layout_gravity="center_horizontal"
         android:gravity="center"
@@ -15,249 +15,102 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="WATERING TIME"
-        android:id="@+id/textView"
+        android:text="WATERING TIME (PER DAY)"
+        android:id="@+id/textViewLightHours"
         android:paddingTop="16dp"
         android:paddingRight="16dp"
         android:paddingLeft="16dp"
-        android:layout_below="@+id/textView4"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="Start at..."
-        android:id="@+id/textView2"
-        android:paddingLeft="30dp"
-        android:paddingTop="16dp"
-        android:paddingRight="16dp"
-        android:paddingBottom="16dp"
-        android:layout_below="@+id/textView"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="End at..."
-        android:id="@+id/textView3"
-        android:paddingLeft="30dp"
-        android:paddingTop="16dp"
-        android:paddingRight="16dp"
-        android:paddingBottom="16dp"
-        android:layout_below="@+id/textView2"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
+        android:layout_below="@+id/multiToggleWatering"
+        android:layout_alignParentStart="true"
+        android:paddingBottom="10dp" />
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="WATERING FREQUENCY"
-        android:id="@+id/textView5"
+        android:text="WATERING DURATION:"
+        android:id="@+id/textViewDarkHours"
         android:paddingTop="16dp"
         android:paddingRight="16dp"
         android:paddingLeft="16dp"
-        android:layout_below="@+id/textView3"
-        android:layout_alignParentLeft="true"
+        android:paddingBottom="16dp"
+        android:layout_below="@+id/textViewDurationTime"
+        android:layout_alignParentStart="true" />
+
+    <com.craftapps.remotehorticulture.app.widgets.MultiStateToggleButton
+        android:id="@+id/multiToggleWatering"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:entries="@array/overrideWatering"
+        android:layout_below="@+id/textView4"
         android:layout_alignParentStart="true"
-        android:paddingBottom="16dp" />
+        android:gravity="center" />
 
-    <LinearLayout
-        android:orientation="horizontal"
-        android:layout_width="wrap_content"
+    <TextView
+        android:layout_width="175dp"
         android:layout_height="wrap_content"
-        android:id="@+id/linearLayout"
-        android:layout_below="@+id/linearLayout3"
-        android:layout_centerHorizontal="true">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:text="S"
-            android:id="@+id/textView_Sunday"
-            android:layout_below="@+id/textView6"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true"
-            android:gravity="center"
-            android:padding="10dp" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:text="M"
-            android:id="@+id/textView_Monday"
-            android:gravity="center"
-            android:padding="10dp"
-            android:layout_alignTop="@+id/textView_Sunday"
-            android:layout_toRightOf="@+id/textView_Sunday" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:text="T"
-            android:id="@+id/textView_Tuesday"
-            android:gravity="center"
-            android:padding="10dp"
-            android:layout_alignTop="@+id/textView_Monday"
-            android:layout_toRightOf="@+id/textView_Monday" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:text="W"
-            android:id="@+id/textView_Wednesday"
-            android:gravity="center"
-            android:padding="10dp"
-            android:layout_alignTop="@+id/textView_Tuesday"
-            android:layout_toRightOf="@+id/textView_Tuesday" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:text="T"
-            android:id="@+id/textView_Thursday"
-            android:gravity="center"
-            android:padding="10dp"
-            android:layout_alignTop="@+id/textView_Wednesday"
-            android:layout_toRightOf="@+id/textView_Wednesday" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:text="F"
-            android:id="@+id/textView_Friday"
-            android:gravity="center"
-            android:padding="10dp"
-            android:layout_alignTop="@+id/textView_Thursday"
-            android:layout_toRightOf="@+id/textView_Thursday" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:text="S"
-            android:id="@+id/textView7"
-            android:gravity="center"
-            android:padding="10dp"
-            android:layout_alignTop="@+id/textView_Friday"
-            android:layout_toRightOf="@+id/textView_Friday" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:orientation="horizontal"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/linearLayout"
+        android:id="@+id/textViewTime"
+        android:layout_below="@+id/textViewLightHours"
         android:layout_centerHorizontal="true"
-        android:id="@+id/linearLayout2">
-
-        <CheckBox
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/checkBox_Sunday"
-            android:checked="false"
-            android:padding="1dp" />
-
-        <CheckBox
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/checkBox_Monday"
-            android:checked="false"
-            android:padding="1dp" />
-
-        <CheckBox
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/checkBox_Tuesday"
-            android:checked="false"
-            android:padding="1dp" />
-
-        <CheckBox
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/checkBox_Wednesday"
-            android:checked="false"
-            android:padding="1dp" />
-
-        <CheckBox
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/checkBox_Thursday"
-            android:checked="false"
-            android:padding="1dp" />
-
-        <CheckBox
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/checkBox_Friday"
-            android:checked="false"
-            android:padding="1dp" />
-
-        <CheckBox
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/checkBox_Saturday"
-            android:checked="false"
-            android:padding="1dp" />
-    </LinearLayout>
+        android:text="3"
+        android:gravity="center"
+        android:textSize="25dp"
+        android:typeface="serif"
+        android:padding="5dp" />
 
     <Button
-        style="?android:attr/buttonStyleSmall"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Open Time Picker Dialog"
-        android:id="@+id/buttonStartTime"
-        android:layout_alignBottom="@+id/textView2"
-        android:layout_toRightOf="@+id/textView2"
-        android:layout_alignRight="@+id/linearLayout2"
-        android:layout_alignEnd="@+id/linearLayout2" />
+        android:text="+"
+        android:id="@+id/buttonTimeIncrease"
+        android:layout_alignTop="@+id/textViewTime"
+        android:layout_toRightOf="@+id/textViewTime" />
 
     <Button
-        style="?android:attr/buttonStyleSmall"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Open Time Picker Dialog"
-        android:id="@+id/buttonEndTime"
-        android:layout_alignBottom="@+id/textView3"
-        android:layout_toRightOf="@+id/textView2"
-        android:layout_alignRight="@+id/buttonStartTime"
-        android:layout_alignEnd="@+id/buttonStartTime" />
+        android:text="-"
+        android:id="@+id/buttonTimeDecrease"
+        android:layout_alignTop="@+id/textViewTime"
+        android:layout_toLeftOf="@+id/textViewTime" />
 
-    <LinearLayout
-        android:orientation="horizontal"
-        android:layout_width="wrap_content"
+    <TextView
+        android:layout_width="175dp"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/textView5"
+        android:id="@+id/textViewDuration"
+        android:text="3"
+        android:gravity="center"
+        android:textSize="25dp"
+        android:typeface="serif"
+        android:layout_below="@+id/textViewDarkHours"
         android:layout_centerHorizontal="true"
-        android:id="@+id/linearLayout3">
+        android:padding="5dp" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="30dp"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:text="Repeat?"
-            android:id="@+id/textView6"
-            android:layout_gravity="center_horizontal"
-            android:gravity="center"
-            android:layout_below="@+id/textView5" />
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="+"
+        android:id="@+id/buttonDurationIncrease"
+        android:layout_below="@+id/textViewDarkHours"
+        android:layout_toRightOf="@+id/textViewDuration" />
 
-        <CheckBox
-            android:layout_width="wrap_content"
-            android:layout_height="30dp"
-            android:id="@+id/checkBox_Repeat"
-            android:layout_gravity="center_horizontal"
-            android:checked="false"
-            android:layout_alignTop="@+id/textView6"
-            android:layout_toRightOf="@+id/textView6" />
-    </LinearLayout>
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="-"
+        android:id="@+id/buttonDurationDecrease"
+        android:layout_below="@+id/textViewDarkHours"
+        android:layout_toLeftOf="@+id/textViewDuration" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="EVERY X HOURS"
+        android:id="@+id/textViewDurationTime"
+        android:paddingRight="16dp"
+        android:paddingLeft="16dp"
+        android:paddingBottom="16dp"
+        android:gravity="center_horizontal"
+        android:layout_below="@+id/textViewTime"
+        android:layout_alignParentStart="true" />
 
 </RelativeLayout>
