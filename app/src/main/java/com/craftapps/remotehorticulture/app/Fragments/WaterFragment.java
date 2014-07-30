@@ -11,6 +11,8 @@ import android.graphics.Shader;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -63,8 +65,8 @@ public class WaterFragment extends Fragment {
     private Button buttonTimeDecrease;
     private Button buttonDurIncrease;
     private Button buttonDurDecrease;
-    private TextView textViewTime;
-    private TextView textViewDur;
+    private TextView editTextTime;
+    private TextView editTextDur;
     private TextView textViewTimeHours;
     private MultiStateToggleButton multiToggleWater;
 
@@ -72,15 +74,13 @@ public class WaterFragment extends Fragment {
     private Number currentWater;
     private String currentWaterDate;
 
-    private int waterDuration = 5;
-    private int waterTimePerDay = 4;
+    private int waterDuration;
+    private int waterTimePerDay;
     private int toggleValue = 0;
     private int overrideState = 0;
     private String scheduleId;
     private String onEventId;
     private String offEventId;
-
-    private static int TIMEOFFSET = -4;
 
     public WaterFragment() {
     }
@@ -126,7 +126,6 @@ public class WaterFragment extends Fragment {
         switch(item.getItemId()) {
             case R.id.action_water:
                 startWaterDialog();
-                Toast.makeText(getActivity(), "Water action.", Toast.LENGTH_SHORT).show();
                 return true;
             case R.id.action_refresh:
                 refreshFragment();
@@ -146,9 +145,9 @@ public class WaterFragment extends Fragment {
     }
 
     private void initializeDialogUIElements(View view) {
-        textViewDur = (TextView) view.findViewById(R.id.textViewDuration);
+        editTextDur = (TextView) view.findViewById(R.id.editTextDuration);
         textViewTimeHours = (TextView) view.findViewById(R.id.textViewLightingDuration);
-        textViewTime = (TextView) view.findViewById(R.id.textViewTime);
+        editTextTime = (TextView) view.findViewById(R.id.editTextTime);
         buttonDurDecrease = (Button) view.findViewById(R.id.buttonDurationDecrease);
         buttonDurIncrease = (Button) view.findViewById(R.id.buttonDurationIncrease);
         buttonTimeDecrease = (Button) view.findViewById(R.id.buttonTimeDecrease);
@@ -173,60 +172,59 @@ public class WaterFragment extends Fragment {
                                     public void done(ParseObject scheduleObject, ParseException e) {
                                         if (e == null) {
                                             scheduleObject.put("OverrideState", overrideState);
-                                            scheduleObject.saveInBackground(new SaveCallback() {
-                                                @Override
-                                                public void done(ParseException e) {
-                                                    Log.i("scheduleQuery: ", "success");
-                                                }
-                                            });
+                                            try {
+                                                scheduleObject.save();
+                                            } catch (ParseException e1) {
+                                                e1.printStackTrace();
+                                            }
                                         }
                                     }
                                 });
-                                ParseQuery<ParseObject> onEventQuery = ParseQuery.getQuery("Event");
-                                onEventQuery.getInBackground(onEventId, new GetCallback<ParseObject>() {
-                                    @Override
-                                    public void done(ParseObject parseObject, ParseException e) {
-                                        Calendar midnight = new GregorianCalendar();
-                                        midnight.set(Calendar.HOUR_OF_DAY, 0);
-                                        midnight.set(Calendar.MINUTE, 0);
-                                        midnight.set(Calendar.SECOND, 0);
-                                        midnight.set(Calendar.MILLISECOND, 0);
-                                        midnight.add(Calendar.HOUR, TIMEOFFSET);
-                                        final Date onEventDate = midnight.getTime();
+                                if(toggleValue == 1) {
+                                    ParseQuery<ParseObject> onEventQuery = ParseQuery.getQuery("Event");
+                                    onEventQuery.getInBackground(onEventId, new GetCallback<ParseObject>() {
+                                        @Override
+                                        public void done(ParseObject parseObject, ParseException e) {
+                                            Calendar midnight = new GregorianCalendar();
+                                            midnight.set(Calendar.HOUR_OF_DAY, 0);
+                                            midnight.set(Calendar.MINUTE, 0);
+                                            midnight.set(Calendar.SECOND, 0);
+                                            midnight.set(Calendar.MILLISECOND, 0);
+                                            final Date onEventDate = midnight.getTime();
 
-                                        parseObject.put("IntervalSeconds", 86400/waterTimePerDay);
-                                        parseObject.put("FirstOccurrence", onEventDate);
-                                        parseObject.saveInBackground(new SaveCallback() {
-                                            @Override
-                                            public void done(ParseException e) {
-                                                Log.i("onEventQuery: ", onEventDate.toString());
+                                            parseObject.put("IntervalSeconds", 86400 / waterTimePerDay);
+                                            parseObject.put("FirstOccurrence", onEventDate);
+                                            try {
+                                                parseObject.save();
+                                            } catch (ParseException e1) {
+                                                e1.printStackTrace();
                                             }
-                                        });
-                                    }
-                                });
-                                ParseQuery<ParseObject> offEventQuery = ParseQuery.getQuery("Event");
-                                offEventQuery.getInBackground(offEventId, new GetCallback<ParseObject>() {
-                                    @Override
-                                    public void done(ParseObject parseObject, ParseException e) {
-                                        Calendar midnight = new GregorianCalendar();
-                                        midnight.set(Calendar.HOUR_OF_DAY, 0);
-                                        midnight.set(Calendar.MINUTE, 0);
-                                        midnight.set(Calendar.SECOND, 0);
-                                        midnight.set(Calendar.MILLISECOND, 0);
-                                        midnight.add(Calendar.HOUR, TIMEOFFSET);
-                                        midnight.add(Calendar.MINUTE, waterDuration);
-                                        final Date offEventDate = midnight.getTime();
+                                        }
+                                    });
+                                    ParseQuery<ParseObject> offEventQuery = ParseQuery.getQuery("Event");
+                                    offEventQuery.getInBackground(offEventId, new GetCallback<ParseObject>() {
+                                        @Override
+                                        public void done(ParseObject parseObject, ParseException e) {
+                                            Calendar midnight = new GregorianCalendar();
+                                            midnight.set(Calendar.HOUR_OF_DAY, 0);
+                                            midnight.set(Calendar.MINUTE, 0);
+                                            midnight.set(Calendar.SECOND, 0);
+                                            midnight.set(Calendar.MILLISECOND, 0);
+                                            midnight.add(Calendar.MINUTE, waterDuration);
+                                            final Date offEventDate = midnight.getTime();
 
-                                        parseObject.put("IntervalSeconds", 86400/waterTimePerDay);
-                                        parseObject.put("FirstOccurrence", offEventDate);
-                                        parseObject.saveInBackground(new SaveCallback() {
-                                            @Override
-                                            public void done(ParseException e) {
-                                                Log.i("offEventQuery: ", offEventDate.toString());
-                                            }
-                                        });
-                                    }
-                                });
+                                            parseObject.put("IntervalSeconds", 86400 / waterTimePerDay);
+                                            parseObject.put("FirstOccurrence", offEventDate);
+                                            parseObject.saveInBackground(new SaveCallback() {
+                                                @Override
+                                                public void done(ParseException e) {
+                                                    Log.i("offEventQuery: ", offEventDate.toString());
+                                                    refreshFragment();
+                                                }
+                                            });
+                                        }
+                                    });
+                                }
                             }
                         }
                 );
@@ -292,31 +290,57 @@ public class WaterFragment extends Fragment {
     }
 
     private void applyValuesToDialogUI() {
-        textViewDur.setText(String.valueOf(waterDuration) + " mins");
-        textViewTime.setText(String.valueOf(waterTimePerDay));
+        editTextDur.setText(String.valueOf(waterDuration));
+        editTextTime.setText(String.valueOf(waterTimePerDay));
         textViewTimeHours.setText("EVERY " + (1440 / waterTimePerDay) / 60 + " HOURS " + (1440 / waterTimePerDay) % 60 + " MINUTES");
         multiToggleWater.setValue(toggleValue);
+
+        editTextDur.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View view, boolean b) {
+                try {
+                    waterDuration = Integer.parseInt(editTextDur.getText().toString());
+                } catch (Exception e){
+                    editTextDur.setText("1");
+                    waterDuration = 1;
+                }
+            }
+        });
+
+        editTextTime.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View view, boolean b) {
+                try {
+                    waterTimePerDay = Integer.parseInt(editTextTime.getText().toString());
+                    textViewTimeHours.setText("EVERY " + (1440 / waterTimePerDay) / 60 + " HOURS " + (1440 / waterTimePerDay) % 60 + " MINUTES");
+                } catch (Exception e){
+                    editTextTime.setText("1");
+                    waterTimePerDay = 1;
+                    textViewTimeHours.setText("EVERY " + (1440 / waterTimePerDay) / 60 + " HOURS " + (1440 / waterTimePerDay) % 60 + " MINUTES");
+                }
+            }
+        });
 
         buttonDurDecrease.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(waterDuration > 0) waterDuration--;
-                textViewDur.setText(String.valueOf(waterDuration) + " mins");
+                if(waterDuration > 1) waterDuration--;
+                editTextDur.setText(String.valueOf(waterDuration));
             }
         });
         buttonDurIncrease.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 waterDuration++;
-                textViewDur.setText(String.valueOf(waterDuration) + " mins");
+                editTextDur.setText(String.valueOf(waterDuration));
             }
         });
 
         buttonTimeDecrease.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(waterTimePerDay > 0) waterTimePerDay--;
-                textViewTime.setText(String.valueOf(waterTimePerDay));
+                if(waterTimePerDay > 1) waterTimePerDay--;
+                editTextTime.setText(String.valueOf(waterTimePerDay));
                 textViewTimeHours.setText("EVERY " + (1440 / waterTimePerDay) / 60 + " HOURS " + (1440 / waterTimePerDay) % 60 + " MINUTES");
             }
         });
@@ -324,10 +348,11 @@ public class WaterFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 waterTimePerDay++;
-                textViewTime.setText(String.valueOf(waterTimePerDay));
+                editTextTime.setText(String.valueOf(waterTimePerDay));
                 textViewTimeHours.setText("EVERY " + (1440 / waterTimePerDay) / 60 + " HOURS " + (1440 / waterTimePerDay) % 60 + " MINUTES");
             }
         });
+
         multiToggleWater.setOnValueChangedListener(new ToggleButton.OnValueChangedListener() {
             @Override
             public void onValueChanged(int value) {
@@ -339,7 +364,6 @@ public class WaterFragment extends Fragment {
                 }
             }
         });
-
     }
 
     private void setupGraph() {
