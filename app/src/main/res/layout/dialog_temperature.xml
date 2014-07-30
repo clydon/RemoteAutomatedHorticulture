@@ -103,7 +103,7 @@
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceSmall"
         android:text="Min Temp"
-        android:id="@+id/textView3"
+        android:id="@+id/textViewLightingOn"
         android:layout_below="@+id/editTextMin"
         android:layout_alignRight="@+id/editTextMin"
         android:layout_alignEnd="@+id/editTextMin"

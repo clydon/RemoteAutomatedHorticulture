@@ -66,11 +66,12 @@
             android:layout_height="150dp"
             android:background="@drawable/custom_switch"
             android:text="New ToggleButton"
-            android:id="@+id/toggleButton2"
+            android:id="@+id/toggleButtonLighting"
             android:layout_alignParentTop="true"
             android:layout_centerHorizontal="true"
             android:textOn=""
-            android:textOff=""/>
+            android:textOff=""
+            android:checked="false" />
 
 
 </RelativeLayout>

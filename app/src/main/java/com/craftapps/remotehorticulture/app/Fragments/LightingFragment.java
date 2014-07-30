@@ -18,11 +18,9 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.CheckBox;
-import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ToggleButton;
 
 import com.androidplot.Plot;
 import com.androidplot.xy.BoundaryMode;
@@ -32,40 +30,53 @@ import com.androidplot.xy.XYPlot;
 import com.androidplot.xy.XYSeries;
 import com.androidplot.xy.XYStepMode;
 import com.craftapps.remotehorticulture.app.R;
-import com.craftapps.remotehorticulture.app.widgets.VerticalSeekBar;
+import com.craftapps.remotehorticulture.app.widgets.MultiStateToggleButton;
+import com.craftapps.remotehorticulture.app.widgets.RangeBar;
 import com.parse.FindCallback;
+import com.parse.GetCallback;
 import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
+import com.parse.SaveCallback;
 
 import java.text.DecimalFormat;
 import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.TimeZone;
 
 public class LightingFragment extends Fragment {
 
     private XYPlot lightingPlot;
-    private TextView textViewLatestLighting;
-    private TextView textViewLatestDate;
-    private VerticalSeekBar seekBarCurrentLighting;
+    private TextView textViewLatestLightingDate;
+    private ToggleButton toggleButtonLighting;
     private ProgressDialog progressDialog;
 
-    private CheckBox checkBoxSunday;
-    private CheckBox checkBoxMonday;
-    private CheckBox checkBoxTuesday;
-    private CheckBox checkBoxWednesday;
-    private CheckBox checkBoxThursday;
-    private CheckBox checkBoxFriday;
-    private CheckBox checkBoxSaturday;
-    private CheckBox checkBoxRepeat;
-    private Button buttonStartTime; //todo
-    private Button buttonEndTime; //todo
+    private RangeBar rangeBarLighting;
+    private MultiStateToggleButton multiToggleLighting;
+    private TextView textViewLightingOn;
+    private TextView textViewLightingOff;
+    private TextView textViewLightingDuration;
 
     final List<Double> parseSeries = new ArrayList<Double>();
-    private Number currentLighting;
+    private int currentLighting;
     private String currentLightingDate;
+
+    private int lightingTimeOn;
+    private int lightingTimeOff;
+    private int lightingDuration;
+
+    private int toggleValue = 0;
+    private int overrideState = 0;
+    private String scheduleId;
+    private String onEventId;
+    private String offEventId;
+
+    private static int TIMEOFFSET = -4;
 
     public LightingFragment() {
     }
@@ -82,8 +93,8 @@ public class LightingFragment extends Fragment {
 
         initializeUIElements(rootView);
 
-        //parseQuery();
-        setupGraph();
+        parseQuery();
+        //setupGraph();
 
         return rootView;
     }
@@ -101,8 +112,8 @@ public class LightingFragment extends Fragment {
 
         if (mTemperatureMenuItem != null) mTemperatureMenuItem.setVisible(false);
         if (mHumidityMenuItem != null) mHumidityMenuItem.setVisible(false);
-        if (mLightingMenuItem != null) mLightingMenuItem.setVisible(false);
-        if (mWaterMenuItem != null) mWaterMenuItem.setVisible(true);
+        if (mLightingMenuItem != null) mLightingMenuItem.setVisible(true);
+        if (mWaterMenuItem != null) mWaterMenuItem.setVisible(false);
 
         super.onCreateOptionsMenu(menu, inflater);
     }
@@ -126,24 +137,19 @@ public class LightingFragment extends Fragment {
 
     private void initializeUIElements(View view){
         lightingPlot = (XYPlot) (view != null ? view.findViewById(R.id.lightingPlot) : null);
-        seekBarCurrentLighting = (VerticalSeekBar) (view != null ? view.findViewById(R.id.verticalSeekBar) : null);
-        textViewLatestLighting = (TextView) (view != null ? view.findViewById(R.id.textView_latestLighting) : null);
-        textViewLatestDate = (TextView) (view != null ? view.findViewById(R.id.textView_latestLightingDate) : null);
+        //seekBarCurrentLighting = (VerticalSeekBar) (view != null ? view.findViewById(R.id.verticalSeekBar) : null);
+        toggleButtonLighting = (ToggleButton) (view != null ? view.findViewById(R.id.toggleButtonLighting) : null);
+        textViewLatestLightingDate = (TextView) (view != null ? view.findViewById(R.id.textView_latestLightingDate) : null);
     }
 
     private void initializeDialogUIElements(View view) {
-        checkBoxSunday = (CheckBox) view.findViewById(R.id.checkBox_Sunday);
-        checkBoxMonday = (CheckBox) view.findViewById(R.id.checkBox_Monday);
-        checkBoxTuesday = (CheckBox) view.findViewById(R.id.checkBox_Tuesday);
-        checkBoxWednesday = (CheckBox) view.findViewById(R.id.checkBox_Wednesday);
-        checkBoxThursday = (CheckBox) view.findViewById(R.id.checkBox_Thursday);
-        checkBoxFriday = (CheckBox) view.findViewById(R.id.checkBox_Friday);
-        checkBoxSaturday = (CheckBox) view.findViewById(R.id.checkBox_Saturday);
+        rangeBarLighting = (RangeBar) view.findViewById(R.id.rangeBarLighting);
+        multiToggleLighting = (MultiStateToggleButton) view.findViewById(R.id.multiToggleLighting);
 
-        checkBoxRepeat = (CheckBox) view.findViewById(R.id.checkBox_Repeat);
+        textViewLightingOn = (TextView) view.findViewById(R.id.textViewLightingOn);
+        textViewLightingOff = (TextView) view.findViewById(R.id.textViewLightingOff);
+        textViewLightingDuration = (TextView) view.findViewById(R.id.textViewLightingDuration);
 
-        buttonStartTime = (Button) view.findViewById(R.id.buttonStartTime);
-        buttonEndTime = (Button) view.findViewById(R.id.buttonEndTime);
     }
 
     private void startLightingDialog() {
@@ -155,80 +161,237 @@ public class LightingFragment extends Fragment {
 
         final AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
         alert.setView(lightingDialog)
-                .setPositiveButton("Add",
+                .setPositiveButton("Set",
                         new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int whichButton) { //todo save schedule to Parse
-                                /*ParseQuery<ParseObject> automationControlQuery = ParseQuery.getQuery("AutomationControl");
-                                automationControlQuery.getInBackground("r16XRfo33u", new GetCallback<ParseObject>() {
-                                    public void done(ParseObject automationControl, ParseException e) {
-                                        if (e == null) {
-                                            automationControl.put("TempMin", seekBarDialogMin.getProgress());
-                                            automationControl.put("TempMax", seekBarDialogMax.getProgress());
-                                            automationControl.saveInBackground(new SaveCallback() {
+                            public void onClick(DialogInterface dialog, int whichButton) {
+                                if(toggleValue == 0 || toggleValue == 2) {
+                                    ParseQuery<ParseObject> scheduleQuery = ParseQuery.getQuery("Schedule");
+                                    scheduleQuery.getInBackground(scheduleId, new GetCallback<ParseObject>() {
+                                        public void done(ParseObject scheduleObject, ParseException e) {
+                                            if (e == null) {
+                                                scheduleObject.put("OverrideState", overrideState);
+                                                scheduleObject.saveInBackground(new SaveCallback() {
+                                                    @Override
+                                                    public void done(ParseException e) {
+                                                        Log.i("scheduleQuery: ", "success");
+                                                    }
+                                                });
+                                            }
+                                        }
+                                    });
+                                }
+                                else {
+                                    ParseQuery<ParseObject> onEventQuery = ParseQuery.getQuery("Event");
+                                    onEventQuery.getInBackground(onEventId, new GetCallback<ParseObject>() {
+                                        @Override
+                                        public void done(ParseObject parseObject, ParseException e) {
+                                            int leftIndex = rangeBarLighting.getLeftIndex();
+                                            int hour = (leftIndex % 1440)/ 60;
+                                            int min = (leftIndex % 1440) - (hour * 60);
+
+                                            Calendar midnight = new GregorianCalendar();
+                                            Log.i("Current Time: " , midnight.getTime().toString());
+                                            midnight.set(Calendar.HOUR_OF_DAY, hour);
+                                            midnight.set(Calendar.MINUTE, min);
+                                            midnight.set(Calendar.SECOND, 0);
+                                            midnight.set(Calendar.MILLISECOND, 0);
+                                            Log.i("Scheduled Time: " , midnight.getTime().toString());
+                                            //midnight.add(Calendar.HOUR, Math.abs(TIMEOFFSET));
+                                            //midnight.add(Calendar.MINUTE, rangeBarLighting.getLeftIndex());
+                                            final Date onEventDate = midnight.getTime();
+                                            Log.i("FinalDate Time: " , onEventDate.toString());
+
+                                            parseObject.put("IntervalSeconds", 86400);
+                                            parseObject.put("FirstOccurrence", onEventDate);
+                                            parseObject.saveInBackground(new SaveCallback() {
                                                 @Override
                                                 public void done(ParseException e) {
-                                                    refreshFragment();
+                                                    Log.i("onEventQuery: ", onEventDate.toString());
                                                 }
                                             });
                                         }
-                                    }
-                                });*/
+                                    });
+                                    ParseQuery<ParseObject> offEventQuery = ParseQuery.getQuery("Event");
+                                    offEventQuery.getInBackground(offEventId, new GetCallback<ParseObject>() {
+                                        @Override
+                                        public void done(ParseObject parseObject, ParseException e) {
+                                            Calendar midnight = new GregorianCalendar();
+                                            midnight.set(Calendar.HOUR_OF_DAY, 0);
+                                            midnight.set(Calendar.MINUTE, 0);
+                                            midnight.set(Calendar.SECOND, 0);
+                                            midnight.set(Calendar.MILLISECOND, 0);
+                                            midnight.add(Calendar.MINUTE, rangeBarLighting.getRightIndex());
+                                            final Date offEventDate = midnight.getTime();
+
+                                            parseObject.put("IntervalSeconds", 86400);
+                                            parseObject.put("FirstOccurrence", offEventDate);
+                                            parseObject.saveInBackground(new SaveCallback() {
+                                                @Override
+                                                public void done(ParseException e) {
+                                                    Log.i("offEventQuery: ", offEventDate.toString());
+                                                }
+                                            });
+                                        }
+                                    });
+                                }
+                                refreshFragment();
                             }
                         }
                 );
         alert.show();
     }
 
-    private void setGlobalValues(List<ParseObject> lightingList) {
-        currentLighting = lightingList.get(0).getNumber("lightingLevel");
-        Format formatter = new SimpleDateFormat("hh:mm a - EEE MMMM d");
-        currentLightingDate = formatter.format(lightingList.get(0).getUpdatedAt());
-        Log.i("currentLighting", "= " + currentLighting);
-        Log.i("currentLightingDate", "= " + currentLightingDate);
-
-        for (ParseObject lighting : lightingList) {
-            Log.i("query", "= " + lighting.getDouble("lightingLevel"));
-            parseSeries.add(lighting.getDouble("lightingLevel"));
+    private void setGlobalValues(Number scheduleOverrideState, List<ParseObject> eventList, List<ParseObject> monitorDataList) {
+        switch (scheduleOverrideState.intValue()){
+            case 0: toggleValue = 1; overrideState = 0; //AUTO
+                break;
+            case 1: toggleValue = 2; overrideState = 1; //FORCE ON
+                break;
+            case 2: toggleValue = 0; overrideState = 2; //FORCE OFF
+                break;
         }
+
+        onEventId = eventList.get(1).getObjectId();
+        offEventId = eventList.get(0).getObjectId();
+
+        Calendar startCal = Calendar.getInstance();
+        Date startDate = eventList.get(1).getDate("FirstOccurrence");
+        long startDateInMillis = startDate.getTime();
+        //startDateInMillis -= 14400000;  //sub 4 hours in milliseconds
+        startCal.setTimeInMillis(startDateInMillis);
+        //startTime.setTime(startDate);
+
+        Calendar midStart = Calendar.getInstance();
+        midStart.setTime(startCal.getTime());
+        midStart.set(Calendar.HOUR_OF_DAY, 0);
+        midStart.set(Calendar.MINUTE, 0);
+        midStart.set(Calendar.SECOND, 0);
+        midStart.set(Calendar.MILLISECOND, 0);
+        //midnight.add(Calendar.HOUR, TIMEOFFSET);
+
+
+        Calendar endCal = Calendar.getInstance();
+        Date endDate = eventList.get(0).getDate("FirstOccurrence");
+        long endDateInMillis = endDate.getTime();
+        //endDateInMillis -= 14400000;  //sub 4 hours in milliseconds
+        endCal.setTimeInMillis(endDateInMillis);
+        //endTime.setTime(endDate);
+
+        Calendar midEnd = Calendar.getInstance();
+        midEnd.setTime(endCal.getTime());
+        midEnd.set(Calendar.HOUR_OF_DAY, 0);
+        midEnd.set(Calendar.MINUTE, 0);
+        midEnd.set(Calendar.SECOND, 0);
+        midEnd.set(Calendar.MILLISECOND, 0);
+
+        Log.i("MidnightStart", "= " + midStart.getTimeInMillis()/1000/60 + " " + midStart.getTime());
+        Log.i("StartTime", "= " + startCal.getTimeInMillis()/1000/60 + " " + startCal.getTime());
+        Log.i("MidnightEnd", "= " + midEnd.getTimeInMillis()/1000/60 + " " + midEnd.getTime());
+        Log.i("EndTime", "= " + endCal.getTimeInMillis()/1000/60 + " " + endCal.getTime());
+
+
+        long startDiff = startCal.getTimeInMillis() - midStart.getTimeInMillis();
+        long startTimeInMinutes = (startDiff/1000)/60;
+        Log.i("Start Diff MLS: " , startDiff + "Minutes: " + startTimeInMinutes);
+        lightingTimeOn = (int) startTimeInMinutes;
+
+        long endDiff = endCal.getTimeInMillis() - midEnd.getTimeInMillis();
+        long endTimeInMinutes = (endDiff/1000)/60;
+        Log.i("End Diff MLS: " , endDiff + "Minutes: " + endTimeInMinutes);
+        lightingTimeOff = (int) endTimeInMinutes;
+
+
+
+        lightingDuration = Math.abs(lightingTimeOff - lightingTimeOn);
+
+        currentLighting = monitorDataList.get(0).getInt("LDR");
+        Format formatter = new SimpleDateFormat("hh:mm a - EEE MMMM d");
+        currentLightingDate = formatter.format(monitorDataList.get(0).getUpdatedAt());
+
         applyValuesToUI();
     }
 
     private void applyValuesToUI() {
         setupGraph();
 
-        seekBarCurrentLighting.setProgress(currentLighting.intValue());
-        seekBarCurrentLighting.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
-                seekBar.setProgress(currentLighting.intValue());
-            }
+        toggleButtonLighting.setChecked((currentLighting > 100 ? true : false));
 
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-                seekBar.setProgress(currentLighting.intValue());
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-                seekBar.setProgress(currentLighting.intValue());
-            }
-        });
-
-        textViewLatestLighting.setText(currentLighting.toString() + "%");
-        textViewLatestDate.setText(currentLightingDate);
+        textViewLatestLightingDate.setText(currentLightingDate);
         Log.i("success", ": apply values to UI");
     }
 
     private void applyValuesToDialogUI() {
-        checkBoxSunday.setChecked(false);
-        checkBoxMonday.setChecked(false);
-        checkBoxTuesday.setChecked(false);
-        checkBoxWednesday.setChecked(false);
-        checkBoxThursday.setChecked(false);
-        checkBoxFriday.setChecked(false);
-        checkBoxSaturday.setChecked(false);
+        textViewLightingOn.setText(minutesToTimeString(lightingTimeOn));
+        textViewLightingOff.setText(minutesToTimeString(lightingTimeOff));
 
-        checkBoxRepeat.setChecked(false);
+        String minutesString;
+
+        int hours = lightingDuration / 60;
+        int minutes = lightingDuration % 60;
+
+        if(minutes == 0)    minutesString = "00";
+        else if(minutes<10) minutesString = "0" + minutes;
+        else                minutesString = String.valueOf(minutes);
+
+        textViewLightingDuration.setText(hours + ":" + minutesString + " HOURS OF LIGHT");
+
+        Log.i("lightingTimeOn", "= " + lightingTimeOn);
+        Log.i("lightingTimeOff", "= " + lightingTimeOff);
+
+
+        multiToggleLighting.setValue(toggleValue);
+        rangeBarLighting.setThumbIndices(lightingTimeOn, lightingTimeOff);
+
+        rangeBarLighting.setOnRangeBarChangeListener(new RangeBar.OnRangeBarChangeListener() {
+            @Override
+            public void onIndexChangeListener(RangeBar rangeBar, int leftThumbIndex, int rightThumbIndex) {
+                textViewLightingOn.setText(minutesToTimeString(leftThumbIndex));
+                textViewLightingOff.setText(minutesToTimeString(rightThumbIndex));
+
+                String minutesString;
+                int hours = Math.abs(leftThumbIndex-rightThumbIndex) / 60;
+                int minutes = Math.abs(leftThumbIndex-rightThumbIndex) % 60;
+
+                if(minutes == 0)    minutesString = "00";
+                else if(minutes<10) minutesString = "0" + minutes;
+                else                minutesString = String.valueOf(minutes);
+
+                textViewLightingDuration.setText(hours + ":" + minutesString + " HOURS OF LIGHT");
+            }
+        });
+        multiToggleLighting.setOnValueChangedListener(new com.craftapps.remotehorticulture.app.widgets.ToggleButton.OnValueChangedListener() {
+            @Override
+            public void onValueChanged(int value) {
+                switch (value){
+                    case 0: overrideState = 2; toggleValue = 0; break;
+                    case 1: overrideState = 0; toggleValue = 1; break;
+                    case 2: overrideState = 1; toggleValue = 2; break;
+                    default: overrideState = 0;
+                }
+            }
+        });
+    }
+
+    private String minutesToTimeString(int minutes){
+        String hourString;
+        String minuteString;
+        String AMPM;
+
+        if(minutes/60 >= 12){
+            hourString = String.valueOf(((minutes/60)-12));
+            AMPM = "PM";
+        }
+        else {
+            hourString = ((minutes/60 == 0) ? "12" : String.valueOf(minutes/60));
+            AMPM = "AM";
+        }
+
+        int mins = minutes % 60;
+        if(mins == 0)   minuteString = "00";
+        else if(mins<10)minuteString = "0" + mins;
+        else            minuteString = String.valueOf(mins);
+
+        return hourString + ":" + minuteString + " " + AMPM;
     }
 
     private void setupGraph() {
@@ -283,8 +446,8 @@ public class LightingFragment extends Fragment {
 
     private void preParseQuery() {
         lightingPlot.setVisibility(View.INVISIBLE);
-        textViewLatestDate.setVisibility(View.INVISIBLE);
-        textViewLatestLighting.setVisibility(View.INVISIBLE);
+        textViewLatestLightingDate.setVisibility(View.INVISIBLE);
+        toggleButtonLighting.setVisibility(View.INVISIBLE);
 
         progressDialog = new ProgressDialog(getActivity());
         progressDialog.setTitle("Please Wait..");
@@ -294,16 +457,35 @@ public class LightingFragment extends Fragment {
     }
 
     private void parseQuery() {
-        //preParseQuery();
+        preParseQuery();
 
-        ParseQuery<ParseObject> query = ParseQuery.getQuery("MonitorData");
-        query.orderByDescending("updatedAt");
+        ParseQuery<ParseObject> scheduleQuery = ParseQuery.getQuery("Schedule");
+        scheduleQuery.whereEqualTo("Name", "Light");
 
-        query.findInBackground(new FindCallback<ParseObject>() {
-            public void done(final List<ParseObject> lightingList, ParseException e) {
+        scheduleQuery.findInBackground(new FindCallback<ParseObject>() {
+            public void done(final List<ParseObject> scheduleList, ParseException e) {
                 if (e == null) {
-                    setGlobalValues(lightingList);
-                    postParseQuery();
+                    scheduleId = scheduleList.get(0).getObjectId();
+                    final Number scheduleOverrideState = scheduleList.get(0).getNumber("OverrideState");
+                    ParseQuery<ParseObject> eventQuery = ParseQuery.getQuery("Event");
+                    eventQuery.whereEqualTo("ScheduleId", scheduleId);
+                    eventQuery.findInBackground(new FindCallback<ParseObject>() {
+                        public void done(final List<ParseObject> eventList, ParseException e) {
+                            if (e == null) {
+                                ParseQuery<ParseObject> monitorDataQuery = ParseQuery.getQuery("MonitorData");
+                                monitorDataQuery.orderByDescending("updatedAt");
+                                monitorDataQuery.findInBackground(new FindCallback<ParseObject>() {
+                                    public void done(final List<ParseObject> monitorDataList, ParseException e) {
+                                        if (e == null) {
+                                            setGlobalValues(scheduleOverrideState, eventList, monitorDataList);
+                                            postParseQuery();
+                                        }
+                                    }
+                                });
+                            }
+                        }
+                    });
+
                     Log.i("success", ": findInBackground");
                 } else {
                     Log.i("error", ": findInBackground");
@@ -316,9 +498,10 @@ public class LightingFragment extends Fragment {
 
     private void postParseQuery() {
         progressDialog.dismiss();
+
         lightingPlot.setVisibility(View.VISIBLE);
-        textViewLatestDate.setVisibility(View.VISIBLE);
-        //textViewLatestLighting.setVisibility(View.VISIBLE);
+        textViewLatestLightingDate.setVisibility(View.VISIBLE);
+        toggleButtonLighting.setVisibility(View.VISIBLE);
     }
 
     private void refreshFragment() {

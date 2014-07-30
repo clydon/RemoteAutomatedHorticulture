@@ -32,11 +32,14 @@ import com.androidplot.xy.XYSeries;
 import com.androidplot.xy.XYStepMode;
 import com.craftapps.remotehorticulture.app.R;
 import com.craftapps.remotehorticulture.app.widgets.MultiStateToggleButton;
+import com.craftapps.remotehorticulture.app.widgets.ToggleButton;
 import com.craftapps.remotehorticulture.app.widgets.VerticalSeekBar;
 import com.parse.FindCallback;
+import com.parse.GetCallback;
 import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
+import com.parse.SaveCallback;
 
 import java.text.DecimalFormat;
 import java.text.Format;
@@ -62,7 +65,7 @@ public class WaterFragment extends Fragment {
     private Button buttonDurDecrease;
     private TextView textViewTime;
     private TextView textViewDur;
-    private TextView textViewDurTime;
+    private TextView textViewTimeHours;
     private MultiStateToggleButton multiToggleWater;
 
     final List<Double> parseSeries = new ArrayList<Double>();
@@ -72,6 +75,12 @@ public class WaterFragment extends Fragment {
     private int waterDuration = 5;
     private int waterTimePerDay = 4;
     private int toggleValue = 0;
+    private int overrideState = 0;
+    private String scheduleId;
+    private String onEventId;
+    private String offEventId;
+
+    private static int TIMEOFFSET = -4;
 
     public WaterFragment() {
     }
@@ -138,13 +147,13 @@ public class WaterFragment extends Fragment {
 
     private void initializeDialogUIElements(View view) {
         textViewDur = (TextView) view.findViewById(R.id.textViewDuration);
-        textViewDurTime = (TextView) view.findViewById(R.id.textViewDurationTime);
+        textViewTimeHours = (TextView) view.findViewById(R.id.textViewLightingDuration);
         textViewTime = (TextView) view.findViewById(R.id.textViewTime);
         buttonDurDecrease = (Button) view.findViewById(R.id.buttonDurationDecrease);
         buttonDurIncrease = (Button) view.findViewById(R.id.buttonDurationIncrease);
         buttonTimeDecrease = (Button) view.findViewById(R.id.buttonTimeDecrease);
         buttonTimeIncrease = (Button) view.findViewById(R.id.buttonTimeIncrease);
-        multiToggleWater = (MultiStateToggleButton) view.findViewById(R.id.multiToggleWatering);
+        multiToggleWater = (MultiStateToggleButton) view.findViewById(R.id.multiToggleLighting);
     }
 
     private void startWaterDialog() {
@@ -158,63 +167,90 @@ public class WaterFragment extends Fragment {
         alert.setView(waterDialog)
                 .setPositiveButton("Set",
                         new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int whichButton) { //todo save schedule to Parse
-                                /*ParseQuery<ParseObject> automationControlQuery = ParseQuery.getQuery("AutomationControl");
-                                automationControlQuery.getInBackground("r16XRfo33u", new GetCallback<ParseObject>() {
-                                    public void done(ParseObject automationControl, ParseException e) {
+                            public void onClick(DialogInterface dialog, int whichButton) {
+                                ParseQuery<ParseObject> scheduleQuery = ParseQuery.getQuery("Schedule");
+                                scheduleQuery.getInBackground(scheduleId, new GetCallback<ParseObject>() {
+                                    public void done(ParseObject scheduleObject, ParseException e) {
                                         if (e == null) {
-                                            automationControl.put("TempMin", seekBarDialogMin.getProgress());
-                                            automationControl.put("TempMax", seekBarDialogMax.getProgress());
-                                            automationControl.saveInBackground(new SaveCallback() {
+                                            scheduleObject.put("OverrideState", overrideState);
+                                            scheduleObject.saveInBackground(new SaveCallback() {
                                                 @Override
                                                 public void done(ParseException e) {
-                                                    refreshFragment();
+                                                    Log.i("scheduleQuery: ", "success");
                                                 }
                                             });
                                         }
                                     }
-                                });*/
+                                });
+                                ParseQuery<ParseObject> onEventQuery = ParseQuery.getQuery("Event");
+                                onEventQuery.getInBackground(onEventId, new GetCallback<ParseObject>() {
+                                    @Override
+                                    public void done(ParseObject parseObject, ParseException e) {
+                                        Calendar midnight = new GregorianCalendar();
+                                        midnight.set(Calendar.HOUR_OF_DAY, 0);
+                                        midnight.set(Calendar.MINUTE, 0);
+                                        midnight.set(Calendar.SECOND, 0);
+                                        midnight.set(Calendar.MILLISECOND, 0);
+                                        midnight.add(Calendar.HOUR, TIMEOFFSET);
+                                        final Date onEventDate = midnight.getTime();
+
+                                        parseObject.put("IntervalSeconds", 86400/waterTimePerDay);
+                                        parseObject.put("FirstOccurrence", onEventDate);
+                                        parseObject.saveInBackground(new SaveCallback() {
+                                            @Override
+                                            public void done(ParseException e) {
+                                                Log.i("onEventQuery: ", onEventDate.toString());
+                                            }
+                                        });
+                                    }
+                                });
+                                ParseQuery<ParseObject> offEventQuery = ParseQuery.getQuery("Event");
+                                offEventQuery.getInBackground(offEventId, new GetCallback<ParseObject>() {
+                                    @Override
+                                    public void done(ParseObject parseObject, ParseException e) {
+                                        Calendar midnight = new GregorianCalendar();
+                                        midnight.set(Calendar.HOUR_OF_DAY, 0);
+                                        midnight.set(Calendar.MINUTE, 0);
+                                        midnight.set(Calendar.SECOND, 0);
+                                        midnight.set(Calendar.MILLISECOND, 0);
+                                        midnight.add(Calendar.HOUR, TIMEOFFSET);
+                                        midnight.add(Calendar.MINUTE, waterDuration);
+                                        final Date offEventDate = midnight.getTime();
+
+                                        parseObject.put("IntervalSeconds", 86400/waterTimePerDay);
+                                        parseObject.put("FirstOccurrence", offEventDate);
+                                        parseObject.saveInBackground(new SaveCallback() {
+                                            @Override
+                                            public void done(ParseException e) {
+                                                Log.i("offEventQuery: ", offEventDate.toString());
+                                            }
+                                        });
+                                    }
+                                });
                             }
                         }
                 );
         alert.show();
     }
 
-    private void setGlobalValues(String scheduleId, Number scheduleOverrideState, List<ParseObject> eventList, List<ParseObject> monitorDataList) {
+    private void setGlobalValues(Number scheduleOverrideState, List<ParseObject> eventList, List<ParseObject> monitorDataList) {
         switch (scheduleOverrideState.intValue()){
-            case 0: toggleValue = 1;
+            case 0: toggleValue = 1; overrideState = 0; //AUTO
                 break;
-            case 1: toggleValue = 2;
+            case 1: toggleValue = 2; overrideState = 1; //FORCE ON
                 break;
-            case 2: toggleValue = 0;
+            case 2: toggleValue = 0; overrideState = 2; //FORCE OFF
                 break;
         }
 
         Date startDate = eventList.get(0).getDate("FirstOccurrence");
+        onEventId = eventList.get(0).getObjectId();
         Date endDate = eventList.get(1).getDate("FirstOccurrence");
+        offEventId = eventList.get(1).getObjectId();
         long duration  = startDate.getTime() - endDate.getTime();
 
-        waterDuration = (int) TimeUnit.MILLISECONDS.toMinutes(duration);
+        waterDuration = Math.abs((int) TimeUnit.MILLISECONDS.toMinutes(duration));
         waterTimePerDay = 86400/eventList.get(0).getInt("IntervalSeconds");
-
-        //12 times per day (every two hours == 7200 seconds)
-        //duration 5 minutes (2 events made First Occurrence differs by 5 minutes)
-
-        //9 times per day (Interval = 86400/<times per day>)
-        //
-        /*int interval = 7200;
-        Calendar midnight = new GregorianCalendar();
-        midnight.set(Calendar.HOUR_OF_DAY, 0);
-        midnight.set(Calendar.MINUTE, 0);
-        midnight.set(Calendar.SECOND, 0);
-        midnight.set(Calendar.MILLISECOND, 0);
-        Date fireOn = midnight.getTime();
-
-        midnight.add(Calendar.SECOND, interval);
-        Date fireOff = midnight.getTime();*/
-
-
-
 
         currentWater = monitorDataList.get(0).getNumber("waterLevel");
         Format formatter = new SimpleDateFormat("hh:mm a - EEE MMMM d");
@@ -258,6 +294,7 @@ public class WaterFragment extends Fragment {
     private void applyValuesToDialogUI() {
         textViewDur.setText(String.valueOf(waterDuration) + " mins");
         textViewTime.setText(String.valueOf(waterTimePerDay));
+        textViewTimeHours.setText("EVERY " + (1440 / waterTimePerDay) / 60 + " HOURS " + (1440 / waterTimePerDay) % 60 + " MINUTES");
         multiToggleWater.setValue(toggleValue);
 
         buttonDurDecrease.setOnClickListener(new View.OnClickListener() {
@@ -280,7 +317,7 @@ public class WaterFragment extends Fragment {
             public void onClick(View view) {
                 if(waterTimePerDay > 0) waterTimePerDay--;
                 textViewTime.setText(String.valueOf(waterTimePerDay));
-                textViewDurTime.setText("EVERY " + (1440/ waterTimePerDay)/60 + " HOURS " + (1440/ waterTimePerDay)%60 + " MINUTES");
+                textViewTimeHours.setText("EVERY " + (1440 / waterTimePerDay) / 60 + " HOURS " + (1440 / waterTimePerDay) % 60 + " MINUTES");
             }
         });
         buttonTimeIncrease.setOnClickListener(new View.OnClickListener() {
@@ -288,9 +325,21 @@ public class WaterFragment extends Fragment {
             public void onClick(View view) {
                 waterTimePerDay++;
                 textViewTime.setText(String.valueOf(waterTimePerDay));
-                textViewDurTime.setText("EVERY " + (1440/ waterTimePerDay)/60 + " HOURS " + (1440/ waterTimePerDay)%60 + " MINUTES");
+                textViewTimeHours.setText("EVERY " + (1440 / waterTimePerDay) / 60 + " HOURS " + (1440 / waterTimePerDay) % 60 + " MINUTES");
             }
         });
+        multiToggleWater.setOnValueChangedListener(new ToggleButton.OnValueChangedListener() {
+            @Override
+            public void onValueChanged(int value) {
+                switch (value){
+                    case 0: overrideState = 2; toggleValue = 0; break;
+                    case 1: overrideState = 0; toggleValue = 1; break;
+                    case 2: overrideState = 1; toggleValue = 2; break;
+                    default: overrideState = 0;
+                }
+            }
+        });
+
     }
 
     private void setupGraph() {
@@ -350,14 +399,13 @@ public class WaterFragment extends Fragment {
     private void parseQuery() {
         preParseQuery();
 
-        ParseQuery<ParseObject> query = ParseQuery.getQuery("Schedule");
-        query.whereEqualTo("Type", 2);
+        ParseQuery<ParseObject> scheduleQuery = ParseQuery.getQuery("Schedule");
+        scheduleQuery.whereEqualTo("Name", "Pump");
 
-        query.findInBackground(new FindCallback<ParseObject>() {
+        scheduleQuery.findInBackground(new FindCallback<ParseObject>() {
             public void done(final List<ParseObject> scheduleList, ParseException e) {
                 if (e == null) {
-                    final String scheduleId = scheduleList.get(0).getObjectId();
-                    //final String scheduleId = "azc4J8lBGW";
+                    scheduleId = scheduleList.get(0).getObjectId();
                     final Number scheduleOverrideState = scheduleList.get(0).getNumber("OverrideState");
                     ParseQuery<ParseObject> eventQuery = ParseQuery.getQuery("Event");
                     eventQuery.whereEqualTo("ScheduleId", scheduleId);
@@ -369,7 +417,7 @@ public class WaterFragment extends Fragment {
                                 monitorDataQuery.findInBackground(new FindCallback<ParseObject>() {
                                     public void done(final List<ParseObject> monitorDataList, ParseException e) {
                                         if (e == null) {
-                                            setGlobalValues(scheduleId, scheduleOverrideState, eventList, monitorDataList);
+                                            setGlobalValues(scheduleOverrideState, eventList, monitorDataList);
                                             postParseQuery();
                                         }
                                     }

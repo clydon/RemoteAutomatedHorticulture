@@ -28,7 +28,8 @@
         android:layout_alignParentEnd="true"
         android:layout_toRightOf="@+id/verticalSeekBar"
         android:paddingTop="30dp"
-        android:typeface="serif" />
+        android:typeface="serif"
+        android:maxLines="1" />
 
     <TextView
         android:layout_width="wrap_content"
