@@ -61,7 +61,6 @@ public class LightingFragment extends Fragment {
     private TextView textViewLightingOff;
     private TextView textViewLightingDuration;
 
-    final List<Double> parseSeries = new ArrayList<Double>();
     private int currentLighting;
     private String currentLightingDate;
 
@@ -314,7 +313,7 @@ public class LightingFragment extends Fragment {
     private void applyValuesToUI() {
         setupGraph();
 
-        toggleButtonLighting.setChecked((currentLighting > 100 ? true : false));
+        toggleButtonLighting.setChecked((currentLighting > 100));
 
         textViewLatestLightingDate.setText(currentLightingDate);
         Log.i("success", ": apply values to UI");
@@ -398,7 +397,7 @@ public class LightingFragment extends Fragment {
         List<Double> pSeries = new ArrayList<Double>();
 
         for(int i=0; i<50; i++){
-            int j = (int)(Math.random() * ((1 - 0) + 1));
+            int j = (int)(Math.random() * ((1) + 1));
             if (j==0) pSeries.add((double) 0);
             else pSeries.add((double) 100);
         }

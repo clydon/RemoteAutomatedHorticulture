@@ -26,7 +26,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.Format;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -34,7 +33,6 @@ import java.util.concurrent.TimeUnit;
 public class OverviewFragment extends Fragment {
 
     private ProgressDialog progressDialog;
-    final List<Double> parseSeries = new ArrayList<Double>();
 
     private VerticalSeekBar seekBarTemp;
     private VerticalSeekBar seekBarHumid;
@@ -47,7 +45,6 @@ public class OverviewFragment extends Fragment {
     private TextView textViewWaterCycleDur;
     private ToggleButton toggleButtonLight;
 
-
     private Number currentTemp;
     private Number currentHumid;
     private String currentDate;
@@ -56,10 +53,6 @@ public class OverviewFragment extends Fragment {
     private double lightsOffTime;
     private int waterDuration;
     private double waterHourInterval;
-
-    private int lightingOffDuration;
-    private int currentLighting;
-
 
     public OverviewFragment() {
     }
@@ -126,14 +119,6 @@ public class OverviewFragment extends Fragment {
         toggleButtonLight = (ToggleButton) (view != null ? view.findViewById(R.id.toggleButtonLighting) : null);
     }
 
-    private void initializeDialogUIElements(View view) {
-        /*seekBarDialogMin = (VerticalSeekBar) view.findViewById(R.id.seekBar_min);
-        seekBarDialogMax = (VerticalSeekBar) view.findViewById(R.id.seekBar_max);
-        textViewDialogCurrentTemp = (TextView) view.findViewById(R.id.textViewCurrent);
-        editTextDialogMinTemp = (EditText) view.findViewById(R.id.editTextMin);
-        editTextDialogMaxTemp = (EditText) view.findViewById(R.id.editTextMax);*/
-    }
-
     private void setGlobalValues(List<ParseObject> monitorDataList,
                                  List<ParseObject> lightEventList, Number lightOverrideState,
                                  List<ParseObject> waterEventList, Number waterOverrideState) {
@@ -147,8 +132,7 @@ public class OverviewFragment extends Fragment {
         switch (lightOverrideState.intValue()){
             case 0: // Auto
                 int LDR = monitorDataList.get(0).getNumber("LDR").intValue();
-                if(LDR >= 100) currentLight = true;
-                else  currentLight = false;
+                currentLight = LDR >= 100;
                 break;
             case 1: // On
                 currentLight = true;
@@ -274,7 +258,7 @@ public class OverviewFragment extends Fragment {
         });
     }
 
-    private void waterEventQuery(List<ParseObject> monitorDataList, final List<ParseObject> lightEventList, final Number lightOverrideState) {
+    private void waterEventQuery(final List<ParseObject> monitorDataList, final List<ParseObject> lightEventList, final Number lightOverrideState) {
         ParseQuery<ParseObject> waterScheduleQuery = ParseQuery.getQuery("Schedule");
         waterScheduleQuery.whereEqualTo("Name", "Pump");
 
@@ -289,16 +273,8 @@ public class OverviewFragment extends Fragment {
                     waterEventQuery.findInBackground(new FindCallback<ParseObject>() {
                         public void done(final List<ParseObject> waterEventList, ParseException e) {
                             if (e == null) {
-                                ParseQuery<ParseObject> monitorDataQuery = ParseQuery.getQuery("MonitorData");
-                                monitorDataQuery.orderByDescending("createdAt");
-                                monitorDataQuery.findInBackground(new FindCallback<ParseObject>() {
-                                    public void done(final List<ParseObject> monitorDataList, ParseException e) {
-                                        if (e == null) {
-                                            setGlobalValues(monitorDataList, lightEventList,lightOverrideState, waterEventList, waterOverrideState);
-                                            postParseQuery();
-                                        }
-                                    }
-                                });
+                                setGlobalValues(monitorDataList, lightEventList,lightOverrideState, waterEventList, waterOverrideState);
+                                postParseQuery();
                             }
                         }
                     });

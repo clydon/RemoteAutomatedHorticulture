@@ -31,8 +31,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.Format;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -45,7 +43,6 @@ public class HumidityFragment extends Fragment {
     private VerticalSeekBar seekBarCurrentHumid;
     private WebView webViewHumid;
 
-    final List<Double> parseSeries = new ArrayList<Double>();
     private ProgressDialog progressDialog;
     private Number currentHumid;
     private Number minHumid;
