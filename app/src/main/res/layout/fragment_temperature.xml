@@ -10,7 +10,7 @@
         android:layout_centerHorizontal="false"
         android:max="120"
         android:id="@+id/verticalSeekBar"
-        android:progress="50"
+        android:progress="0"
         android:thumb="@android:color/transparent"
         android:layout_alignBottom="@+id/textView_latestTemp"
         android:indeterminate="false" />
@@ -19,7 +19,7 @@
         android:layout_width="250dp"
         android:layout_height="150dp"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="-0.00 F"
+        android:text="0.00° F"
         android:id="@+id/textView_latestTemp"
         android:gravity="center"
         android:textSize="55dp"
@@ -36,7 +36,7 @@
         android:layout_height="50dp"
         android:textAppearance="?android:attr/textAppearanceSmall"
         android:text="Date"
-        android:id="@+id/textViewTemperatureDate"
+        android:id="@+id/textViewDate"
         android:gravity="center"
         android:typeface="serif"
         android:layout_above="@+id/textView_minTempLabel"
@@ -82,8 +82,8 @@
         android:padding="16dp"
         android:typeface="serif"
         android:layout_below="@+id/textView_latestTemp"
-        android:layout_alignLeft="@+id/textViewTemperatureDate"
-        android:layout_alignStart="@+id/textViewTemperatureDate" />
+        android:layout_alignLeft="@+id/textViewDate"
+        android:layout_alignStart="@+id/textViewDate" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -101,7 +101,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="-0.00 F"
+        android:text="0.00 F"
         android:id="@+id/textView_minTemp"
         android:typeface="serif"
         android:layout_alignTop="@+id/textView_maxTemp"
@@ -115,13 +115,13 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="-0.00 F"
+        android:text="0.00 F"
         android:id="@+id/textView_maxTemp"
         android:gravity="center_horizontal|top"
         android:typeface="serif"
         android:layout_below="@+id/textView_maxTempLabel"
-        android:layout_alignRight="@+id/textViewTemperatureDate"
-        android:layout_alignEnd="@+id/textViewTemperatureDate"
+        android:layout_alignRight="@+id/textViewDate"
+        android:layout_alignEnd="@+id/textViewDate"
         android:layout_alignLeft="@+id/textView_maxTempLabel"
         android:layout_alignStart="@+id/textView_maxTempLabel"
         android:paddingBottom="25dp" />

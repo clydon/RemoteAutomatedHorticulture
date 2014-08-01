@@ -37,6 +37,7 @@ import java.io.InputStream;
 import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class TemperatureFragment extends Fragment {
@@ -59,6 +60,8 @@ public class TemperatureFragment extends Fragment {
     private Number currentTemp;
     private Number minTemp;
     private Number maxTemp;
+    private Number lowTemp;
+    private Number highTemp;
     private String currentTempDate;
 
 
@@ -122,7 +125,7 @@ public class TemperatureFragment extends Fragment {
     private void initializeUIElements(View view){
         seekBarCurrentTemp = (VerticalSeekBar) (view != null ? view.findViewById(R.id.verticalSeekBar) : null);
         textViewLatestTemp = (TextView) (view != null ? view.findViewById(R.id.textView_latestTemp) : null);
-        textViewLatestDate = (TextView) (view != null ? view.findViewById(R.id.textViewTemperatureDate) : null);
+        textViewLatestDate = (TextView) (view != null ? view.findViewById(R.id.textViewDate) : null);
         textViewMinTemp = (TextView) (view != null ? view.findViewById(R.id.textView_minTemp) : null);
         textViewMaxTemp = (TextView) (view != null ? view.findViewById(R.id.textView_maxTemp) : null);
         webViewTemp = (WebView) (view != null ? view.findViewById(R.id.webView) : null);
@@ -176,6 +179,24 @@ public class TemperatureFragment extends Fragment {
         minTemp = automationControlList.get(0).getNumber("TempMin");
         maxTemp = automationControlList.get(0).getNumber("TempMax");
 
+        double high = monitorDataList.get(0).getNumber("fahrenheit").doubleValue();
+        double low = monitorDataList.get(0).getNumber("fahrenheit").doubleValue();
+        for(ParseObject object : monitorDataList){
+            Date now = new Date();
+            long yesterday = now.getTime() - 86400000;
+            Date createdAt = object.getCreatedAt();
+            if(createdAt.getTime() >= yesterday) {
+                double temp = object.getNumber("fahrenheit").doubleValue();
+                if(temp > high)
+                    high = temp;
+                if(temp < low)
+                    low = temp;
+            }
+        }
+        highTemp = high;
+        lowTemp = low;
+
+
         for (ParseObject temp : monitorDataList) {
             Log.i("query", "= " + temp.getNumber("fahrenheit"));
             parseSeries.add(temp.getDouble("fahrenheit"));
@@ -212,8 +233,8 @@ public class TemperatureFragment extends Fragment {
         textViewLatestTemp.setText(currentTemp.toString() + "° F");
         textViewLatestDate.setText(currentTempDate);
 
-        textViewMinTemp.setText(minTemp + "° F");
-        textViewMaxTemp.setText(maxTemp + "° F");
+        textViewMinTemp.setText(lowTemp + "° F");
+        textViewMaxTemp.setText(highTemp + "° F");
     }
 
     private void loadChart() {

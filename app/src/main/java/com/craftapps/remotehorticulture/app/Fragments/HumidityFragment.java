@@ -33,6 +33,7 @@ import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 public class HumidityFragment extends Fragment {
@@ -119,12 +120,28 @@ public class HumidityFragment extends Fragment {
         Format formatter = new SimpleDateFormat("hh:mm a - EEE MMMM d");
         currentHumidDate = formatter.format(humidList.get(0).getUpdatedAt());
 
-        for (ParseObject humid : humidList) {
+        double high = humidList.get(0).getNumber("humidity").doubleValue();
+        double low = humidList.get(0).getNumber("humidity").doubleValue();
+        for(ParseObject object : humidList){
+            Date now = new Date();
+            long yesterday = now.getTime() - 86400000;
+            Date createdAt = object.getCreatedAt();
+            if(createdAt.getTime() >= yesterday) {
+                double temp = object.getNumber("humidity").doubleValue();
+                if(temp > high)
+                    high = temp;
+                if(temp < low)
+                    low = temp;
+            }
+        }
+
+        /*for (ParseObject humid : humidList) {
             Log.i("query", "= " + humid.getNumber("humidity"));
             parseSeries.add(humid.getDouble("humidity"));
-        }
-        maxHumid = Collections.max(parseSeries);
-        minHumid = Collections.min(parseSeries);
+        }*/
+
+        maxHumid = high;
+        minHumid = low;
 
         applyValuesToUI();
     }

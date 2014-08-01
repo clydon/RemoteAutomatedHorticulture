@@ -10,7 +10,7 @@
         android:layout_centerHorizontal="false"
         android:max="100"
         android:id="@+id/verticalSeekBar"
-        android:progress="50"
+        android:progress="0"
         android:thumb="@android:color/transparent"
         android:layout_alignBottom="@+id/textView_latestHumid" />
 
