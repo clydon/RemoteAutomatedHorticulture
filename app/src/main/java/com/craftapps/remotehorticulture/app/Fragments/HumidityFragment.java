@@ -118,7 +118,7 @@ public class HumidityFragment extends Fragment {
     private void setGlobalValues(List<ParseObject> humidList) {
         currentHumid = humidList.get(0).getNumber("humidity");
         Format formatter = new SimpleDateFormat("hh:mm a - EEE MMMM d");
-        currentHumidDate = formatter.format(humidList.get(0).getUpdatedAt());
+        currentHumidDate = formatter.format(humidList.get(0).getCreatedAt());
 
         double high = humidList.get(0).getNumber("humidity").doubleValue();
         double low = humidList.get(0).getNumber("humidity").doubleValue();
@@ -221,7 +221,7 @@ public class HumidityFragment extends Fragment {
         preParseQuery();
 
         ParseQuery<ParseObject> query = ParseQuery.getQuery("MonitorData");
-        query.orderByDescending("updatedAt");
+        query.orderByDescending("createdAt");
         query.findInBackground(new FindCallback<ParseObject>() {
             public void done(final List<ParseObject> humidList, ParseException e) {
                 if (e == null) {

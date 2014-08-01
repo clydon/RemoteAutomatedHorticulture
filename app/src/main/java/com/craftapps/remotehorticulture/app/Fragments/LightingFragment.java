@@ -306,7 +306,7 @@ public class LightingFragment extends Fragment {
 
         currentLighting = monitorDataList.get(0).getInt("LDR");
         Format formatter = new SimpleDateFormat("hh:mm a - EEE MMMM d");
-        currentLightingDate = formatter.format(monitorDataList.get(0).getUpdatedAt());
+        currentLightingDate = formatter.format(monitorDataList.get(0).getCreatedAt());
 
         applyValuesToUI();
     }
@@ -473,7 +473,7 @@ public class LightingFragment extends Fragment {
                         public void done(final List<ParseObject> eventList, ParseException e) {
                             if (e == null) {
                                 ParseQuery<ParseObject> monitorDataQuery = ParseQuery.getQuery("MonitorData");
-                                monitorDataQuery.orderByDescending("updatedAt");
+                                monitorDataQuery.orderByDescending("createdAt");
                                 monitorDataQuery.findInBackground(new FindCallback<ParseObject>() {
                                     public void done(final List<ParseObject> monitorDataList, ParseException e) {
                                         if (e == null) {

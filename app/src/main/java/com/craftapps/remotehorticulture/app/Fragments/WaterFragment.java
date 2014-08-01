@@ -252,7 +252,7 @@ public class WaterFragment extends Fragment {
 
         currentWater = monitorDataList.get(0).getNumber("waterLevel");
         Format formatter = new SimpleDateFormat("hh:mm a - EEE MMMM d");
-        currentWaterDate = formatter.format(monitorDataList.get(0).getUpdatedAt());
+        currentWaterDate = formatter.format(monitorDataList.get(0).getCreatedAt());
         Log.i("currentWater", "= " + currentWater);
         Log.i("currentWaterDate", "= " + currentWaterDate);
 
@@ -437,7 +437,7 @@ public class WaterFragment extends Fragment {
                         public void done(final List<ParseObject> eventList, ParseException e) {
                             if (e == null) {
                                 ParseQuery<ParseObject> monitorDataQuery = ParseQuery.getQuery("MonitorData");
-                                monitorDataQuery.orderByDescending("updatedAt");
+                                monitorDataQuery.orderByDescending("createdAt");
                                 monitorDataQuery.findInBackground(new FindCallback<ParseObject>() {
                                     public void done(final List<ParseObject> monitorDataList, ParseException e) {
                                         if (e == null) {

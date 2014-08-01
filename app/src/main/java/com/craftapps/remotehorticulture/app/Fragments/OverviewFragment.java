@@ -290,7 +290,7 @@ public class OverviewFragment extends Fragment {
                         public void done(final List<ParseObject> waterEventList, ParseException e) {
                             if (e == null) {
                                 ParseQuery<ParseObject> monitorDataQuery = ParseQuery.getQuery("MonitorData");
-                                monitorDataQuery.orderByDescending("updatedAt");
+                                monitorDataQuery.orderByDescending("createdAt");
                                 monitorDataQuery.findInBackground(new FindCallback<ParseObject>() {
                                     public void done(final List<ParseObject> monitorDataList, ParseException e) {
                                         if (e == null) {
