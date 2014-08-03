@@ -28,6 +28,8 @@ import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
 public class OverviewFragment extends Fragment {
@@ -116,7 +118,7 @@ public class OverviewFragment extends Fragment {
         textViewLightHoursOff = (TextView) (view != null ? view.findViewById(R.id.textViewDarkHours) : null);
         textViewWaterCycleEvery = (TextView) (view != null ? view.findViewById(R.id.textViewWateringCycle) : null);
         textViewWaterCycleDur = (TextView) (view != null ? view.findViewById(R.id.textViewWateringDuration) : null);
-        toggleButtonLight = (ToggleButton) (view != null ? view.findViewById(R.id.toggleButtonLighting) : null);
+        toggleButtonLight = (ToggleButton) (view != null ? view.findViewById(R.id.toggleButtonOverviewLighting) : null);
     }
 
     private void setGlobalValues(List<ParseObject> monitorDataList,
@@ -210,18 +212,15 @@ public class OverviewFragment extends Fragment {
 
     private void parseQuery() {
         preParseQuery();
-        monitorDataQuery();
 
-        //MonitorData -> Temperature~
-        //MonitorData -> Humidity~
-        //MonitorData -> Latest Monitor Date~
-        //Schedule then Event -> Light Event On/Off - Light Hours
-        //Schedule then Event -> Watering freq and duration
-        //CLASSNAME -> water level?
-        //CLASSNAME -> Light is On or Off~
-        //CLASSNAME -> VALUENEEDED
-
+        new Timer().schedule(new TimerTask() {
+            @Override
+            public void run() {
+                monitorDataQuery();
+            }
+        }, 2500);
     }
+
 
     private void monitorDataQuery(){
         ParseQuery<ParseObject> monitorDataQuery = ParseQuery.getQuery("MonitorData");

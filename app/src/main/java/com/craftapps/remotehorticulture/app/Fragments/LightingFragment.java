@@ -3,6 +3,7 @@ package com.craftapps.remotehorticulture.app.Fragments;
 
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.app.TimePickerDialog;
 import android.content.DialogInterface;
 import android.graphics.Color;
 import android.graphics.LinearGradient;
@@ -19,6 +20,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.TimePicker;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
@@ -47,6 +49,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class LightingFragment extends Fragment {
 
@@ -68,7 +72,8 @@ public class LightingFragment extends Fragment {
     private int lightingTimeOff;
     private int lightingDuration;
 
-    private int toggleValue = 0;
+    private boolean toggleValue = false;
+    private int toggleValueDialog = 0;
     private int overrideState = 0;
     private String scheduleId;
     private String onEventId;
@@ -226,7 +231,7 @@ public class LightingFragment extends Fragment {
                                     }
                                 });
 
-                                
+
                                 ParseQuery<ParseObject> scheduleQuery = ParseQuery.getQuery("Schedule");
                                 scheduleQuery.getInBackground(scheduleId, new GetCallback<ParseObject>() {
                                     public void done(ParseObject scheduleObject, ParseException e) {
@@ -247,13 +252,13 @@ public class LightingFragment extends Fragment {
         alert.show();
     }
 
-    private void setGlobalValues(Number scheduleOverrideState, List<ParseObject> eventList, List<ParseObject> monitorDataList) {
+    private void setGlobalValues(Number scheduleOverrideState, List<ParseObject> eventList, List<ParseObject> monitorDataList, List<ParseObject> automationStatusList) {
         switch (scheduleOverrideState.intValue()){
-            case 0: toggleValue = 1; overrideState = 0; //AUTO
+            case 0: toggleValueDialog = 1; overrideState = 0; //AUTO
                 break;
-            case 1: toggleValue = 2; overrideState = 1; //FORCE ON
+            case 1: toggleValueDialog = 2; overrideState = 1; //FORCE ON
                 break;
-            case 2: toggleValue = 0; overrideState = 2; //FORCE OFF
+            case 2: toggleValueDialog = 0; overrideState = 2; //FORCE OFF
                 break;
         }
 
@@ -306,21 +311,44 @@ public class LightingFragment extends Fragment {
         Format formatter = new SimpleDateFormat("hh:mm a - EEE MMMM d");
         currentLightingDate = formatter.format(monitorDataList.get(0).getCreatedAt());
 
+        int automationState = automationStatusList.get(0).getNumber("State").intValue();
+        if(automationState>0)
+            toggleValue = (automationState != 2);
+        else{
+            Date nowDate = new Date();
+
+            Calendar start = new GregorianCalendar();
+            start.setTimeInMillis(startDate.getTime());
+            start.set(Calendar.DAY_OF_YEAR,0);
+
+            Calendar end = new GregorianCalendar();
+            end.setTimeInMillis(endDate.getTime());
+            end.set(Calendar.DAY_OF_YEAR,0);
+
+            Calendar now = new GregorianCalendar();
+            now.setTimeInMillis(nowDate.getTime());
+            now.set(Calendar.DAY_OF_YEAR,0);
+
+            toggleValue = (now.after(start) && now.before(end));
+        }
         applyValuesToUI();
     }
 
     private void applyValuesToUI() {
         setupGraph();
 
-        toggleButtonLighting.setChecked((currentLighting > 100));
+        toggleButtonLighting.setChecked(toggleValue);
 
         textViewLatestLightingDate.setText(currentLightingDate);
         Log.i("success", ": apply values to UI");
     }
 
     private void applyValuesToDialogUI() {
-        textViewLightingOn.setText(minutesToTimeString(lightingTimeOn));
-        textViewLightingOff.setText(minutesToTimeString(lightingTimeOff));
+        final int[] lightingMinutesOn = {lightingTimeOn};
+        final int[] lightingMinutesOff = {lightingTimeOff};
+
+        textViewLightingOn.setText(minutesToTimeString(lightingMinutesOn[0]));
+        textViewLightingOff.setText(minutesToTimeString(lightingMinutesOff[0]));
 
         String minutesString;
 
@@ -333,12 +361,12 @@ public class LightingFragment extends Fragment {
 
         textViewLightingDuration.setText(hours + ":" + minutesString + " HOURS OF LIGHT");
 
-        Log.i("lightingTimeOn", "= " + lightingTimeOn);
+        Log.i("lightingTimeOn", "= " + lightingMinutesOn[0]);
         Log.i("lightingTimeOff", "= " + lightingTimeOff);
 
 
-        multiToggleLighting.setValue(toggleValue);
-        rangeBarLighting.setThumbIndices(lightingTimeOn, lightingTimeOff);
+        multiToggleLighting.setValue(toggleValueDialog);
+        rangeBarLighting.setThumbIndices(lightingMinutesOn[0], lightingTimeOff);
 
         rangeBarLighting.setOnRangeBarChangeListener(new RangeBar.OnRangeBarChangeListener() {
             @Override
@@ -346,7 +374,10 @@ public class LightingFragment extends Fragment {
                 textViewLightingOn.setText(minutesToTimeString(leftThumbIndex));
                 textViewLightingOff.setText(minutesToTimeString(rightThumbIndex));
 
-                String minutesString;
+                lightingMinutesOn[0] = leftThumbIndex;
+                lightingMinutesOff[0] = rightThumbIndex;
+
+                        String minutesString;
                 int hours = Math.abs(leftThumbIndex-rightThumbIndex) / 60;
                 int minutes = Math.abs(leftThumbIndex-rightThumbIndex) % 60;
 
@@ -361,11 +392,47 @@ public class LightingFragment extends Fragment {
             @Override
             public void onValueChanged(int value) {
                 switch (value){
-                    case 0: overrideState = 2; toggleValue = 0; break;
-                    case 1: overrideState = 0; toggleValue = 1; break;
-                    case 2: overrideState = 1; toggleValue = 2; break;
+                    case 0: overrideState = 2; toggleValueDialog = 0; break;
+                    case 1: overrideState = 0; toggleValueDialog = 1; break;
+                    case 2: overrideState = 1; toggleValueDialog = 2; break;
                     default: overrideState = 0;
                 }
+            }
+        });
+        textViewLightingOn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int hour = lightingMinutesOn[0] / 60;
+                int minute = lightingMinutesOn[0] % 60;
+                TimePickerDialog mTimePicker;
+                mTimePicker = new TimePickerDialog(getActivity(), new TimePickerDialog.OnTimeSetListener() {
+                    @Override
+                    public void onTimeSet(TimePicker timePicker, int selectedHour, int selectedMinute) {
+                        lightingMinutesOn[0] = (selectedHour*60)+selectedMinute;
+                        rangeBarLighting.setThumbIndices(lightingMinutesOn[0], lightingTimeOff);
+                        textViewLightingOn.setText( minutesToTimeString(lightingMinutesOn[0]));
+                    }
+                }, hour, minute, false);
+                mTimePicker.setTitle("Lights On at:");
+                mTimePicker.show();
+            }
+        });
+        textViewLightingOff.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int hour = lightingMinutesOff[0] / 60;
+                int minute = lightingMinutesOff[0] % 60;
+                TimePickerDialog mTimePicker;
+                mTimePicker = new TimePickerDialog(getActivity(), new TimePickerDialog.OnTimeSetListener() {
+                    @Override
+                    public void onTimeSet(TimePicker timePicker, int selectedHour, int selectedMinute) {
+                        lightingMinutesOff[0] = (selectedHour*60)+selectedMinute;
+                        rangeBarLighting.setThumbIndices(lightingMinutesOn[0], lightingMinutesOff[0]);
+                        textViewLightingOff.setText( minutesToTimeString(lightingMinutesOff[0]));
+                    }
+                }, hour, minute, false);
+                mTimePicker.setTitle("Lights Off at:");
+                mTimePicker.show();
             }
         });
     }
@@ -457,6 +524,15 @@ public class LightingFragment extends Fragment {
     private void parseQuery() {
         preParseQuery();
 
+        new Timer().schedule(new TimerTask() {
+            @Override
+            public void run() {
+                mainQuery();
+            }
+        }, 2500);
+    }
+
+    private void mainQuery() {
         ParseQuery<ParseObject> scheduleQuery = ParseQuery.getQuery("Schedule");
         scheduleQuery.whereEqualTo("Name", "Light");
 
@@ -475,8 +551,16 @@ public class LightingFragment extends Fragment {
                                 monitorDataQuery.findInBackground(new FindCallback<ParseObject>() {
                                     public void done(final List<ParseObject> monitorDataList, ParseException e) {
                                         if (e == null) {
-                                            setGlobalValues(scheduleOverrideState, eventList, monitorDataList);
-                                            postParseQuery();
+                                            ParseQuery<ParseObject> automationStatusQuery = ParseQuery.getQuery("AutomationState");
+                                            automationStatusQuery.whereEqualTo("Type", "Light");
+                                            automationStatusQuery.orderByDescending("createdAt");
+                                            automationStatusQuery.findInBackground(new FindCallback<ParseObject>() {
+                                                @Override
+                                                public void done(List<ParseObject> automationStatusList, ParseException e) {
+                                                    setGlobalValues(scheduleOverrideState, eventList, monitorDataList, automationStatusList);
+                                                    postParseQuery();
+                                                }
+                                            });
                                         }
                                     }
                                 });
@@ -490,8 +574,6 @@ public class LightingFragment extends Fragment {
                 }
             }
         });
-
-        Log.i("success", ": parseQuery");
     }
 
     private void postParseQuery() {

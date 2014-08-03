@@ -33,6 +33,8 @@ import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class HumidityFragment extends Fragment {
 
@@ -212,6 +214,15 @@ public class HumidityFragment extends Fragment {
     private void parseQuery() {
         preParseQuery();
 
+        new Timer().schedule(new TimerTask() {
+            @Override
+            public void run() {
+                mainQuery();
+            }
+        }, 2500);
+    }
+
+    private void mainQuery(){
         ParseQuery<ParseObject> query = ParseQuery.getQuery("MonitorData");
         query.orderByDescending("createdAt");
         query.findInBackground(new FindCallback<ParseObject>() {

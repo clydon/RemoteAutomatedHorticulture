@@ -39,6 +39,8 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class TemperatureFragment extends Fragment {
 
@@ -329,6 +331,15 @@ public class TemperatureFragment extends Fragment {
     private void parseQuery() {
         preParseQuery();
 
+        new Timer().schedule(new TimerTask() {
+            @Override
+            public void run() {
+                mainQuery();
+            }
+        }, 2500);
+    }
+
+    private void mainQuery(){
         ParseQuery<ParseObject> query = ParseQuery.getQuery("MonitorData");
         query.orderByDescending("createdAt");
 

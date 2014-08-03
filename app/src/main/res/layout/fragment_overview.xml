@@ -43,7 +43,7 @@
         android:layout_height="100dp"
         android:background="@drawable/custom_switch"
         android:text=""
-        android:id="@+id/toggleButtonLighting"
+        android:id="@+id/toggleButtonOverviewLighting"
         android:textOn=""
         android:textOff=""
         android:paddingTop="50dp"

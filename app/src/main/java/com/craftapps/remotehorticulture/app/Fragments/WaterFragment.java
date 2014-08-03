@@ -55,6 +55,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
 public class WaterFragment extends Fragment {
@@ -412,6 +414,15 @@ public class WaterFragment extends Fragment {
     private void parseQuery() {
         preParseQuery();
 
+        new Timer().schedule(new TimerTask() {
+            @Override
+            public void run() {
+                mainQuery();
+            }
+        }, 2500);
+    }
+
+    private void mainQuery(){
         ParseQuery<ParseObject> scheduleQuery = ParseQuery.getQuery("Schedule");
         scheduleQuery.whereEqualTo("Name", "Pump");
 
