@@ -63,6 +63,7 @@ public class TemperatureFragment extends Fragment {
     private Number lowTemp;
     private Number highTemp;
     private String currentTempDate;
+    private String automationControlId;
 
 
     public TemperatureFragment() {
@@ -152,7 +153,7 @@ public class TemperatureFragment extends Fragment {
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int whichButton) {
                                 ParseQuery<ParseObject> automationControlQuery = ParseQuery.getQuery("AutomationControl");
-                                automationControlQuery.getInBackground("r16XRfo33u", new GetCallback<ParseObject>() {
+                                automationControlQuery.getInBackground(automationControlId, new GetCallback<ParseObject>() {
                                     public void done(ParseObject automationControl, ParseException e) {
                                         if (e == null) {
                                             automationControl.put("TempMin", seekBarDialogMin.getProgress());
@@ -173,6 +174,7 @@ public class TemperatureFragment extends Fragment {
     }
 
     private void setGlobalValues(List<ParseObject> monitorDataList, List<ParseObject> automationControlList) {
+        automationControlId = automationControlList.get(0).getObjectId();
         currentTemp = monitorDataList.get(0).getNumber("fahrenheit");
         Format formatter = new SimpleDateFormat("hh:mm a - EEE MMMM d");
         currentTempDate = formatter.format(monitorDataList.get(0).getCreatedAt());

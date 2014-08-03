@@ -144,19 +144,20 @@ public class OverviewFragment extends Fragment {
 
         Date lightsOnDate = lightEventList.get(1).getDate("FirstOccurrence");
         Date lightsOffDate = lightEventList.get(0).getDate("FirstOccurrence");
-        long lightsOnTimeInMillis = Math.abs(lightsOffDate.getTime() - lightsOnDate.getTime());
-        long lightsOnTimeInHours = lightsOnTimeInMillis / 6120000 ;
+        double lightsOnTimeInMillis = Math.abs(lightsOffDate.getTime() - lightsOnDate.getTime() );
+        double lightsOnTimeInHours = lightsOnTimeInMillis / (1000 * 60 * 60.0);
         BigDecimal bd = new BigDecimal(lightsOnTimeInHours);
-        lightsOnTime = bd.setScale(2, RoundingMode.HALF_UP).doubleValue();
-        lightsOffTime = 24 - lightsOnTime;
+        lightsOnTime = bd.setScale(1, RoundingMode.HALF_UP).doubleValue();
+        bd = new BigDecimal(24 - lightsOnTime);
+        lightsOffTime = bd.setScale(1, RoundingMode.HALF_UP).doubleValue();
 
         Date waterStartDate = waterEventList.get(0).getDate("FirstOccurrence");
         Date waterEndDate = waterEventList.get(1).getDate("FirstOccurrence");
         long waterDurationInMillis  = Math.abs(waterStartDate.getTime() - waterEndDate.getTime());
-        waterDuration = Math.abs((int) TimeUnit.MILLISECONDS.toMinutes(waterDurationInMillis));
-        double waterInterval = 86400.0/waterEventList.get(0).getInt("IntervalSeconds"); //Divide by 86400.0 to get interval in Hours
+        waterDuration = (int) (waterDurationInMillis / (1000 * 60));
+        double waterInterval = waterEventList.get(0).getInt("IntervalSeconds") / 3600.0; //Divide by 3600.0.0 to get interval in Hours
         bd = new BigDecimal(waterInterval);
-        waterHourInterval = bd.setScale(2, RoundingMode.HALF_UP).doubleValue();
+        waterHourInterval = bd.setScale(1, RoundingMode.HALF_UP).doubleValue();
 
         applyValuesToUI();
     }

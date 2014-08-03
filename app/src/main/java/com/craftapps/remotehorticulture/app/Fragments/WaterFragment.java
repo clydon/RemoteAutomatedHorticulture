@@ -4,6 +4,7 @@ package com.craftapps.remotehorticulture.app.Fragments;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
+import android.content.res.AssetManager;
 import android.graphics.Color;
 import android.graphics.LinearGradient;
 import android.graphics.Paint;
@@ -18,6 +19,8 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -41,6 +44,9 @@ import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.SaveCallback;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.text.DecimalFormat;
 import java.text.Format;
 import java.text.SimpleDateFormat;
@@ -53,7 +59,7 @@ import java.util.concurrent.TimeUnit;
 
 public class WaterFragment extends Fragment {
 
-    private XYPlot waterPlot;
+    private WebView webViewWater;
     private TextView textViewLatestWater;
     private TextView textViewLatestDate;
     private VerticalSeekBar seekBarCurrentWater;
@@ -136,7 +142,7 @@ public class WaterFragment extends Fragment {
 
 
     private void initializeUIElements(View view){
-        waterPlot = (XYPlot) (view != null ? view.findViewById(R.id.waterPlot) : null);
+        webViewWater = (WebView) (view != null ? view.findViewById(R.id.webViewWater) : null);
         seekBarCurrentWater = (VerticalSeekBar) (view != null ? view.findViewById(R.id.verticalSeekBar) : null);
         textViewLatestWater = (TextView) (view != null ? view.findViewById(R.id.textView_latestWater) : null);
         textViewLatestDate = (TextView) (view != null ? view.findViewById(R.id.textView_latestWaterDate) : null);
@@ -262,7 +268,11 @@ public class WaterFragment extends Fragment {
     }
 
     private void applyValuesToUI() {
-        setupGraph();
+        webViewWater.setVerticalScrollBarEnabled(false);
+        WebSettings webSettings = webViewWater.getSettings();
+        webSettings.setJavaScriptEnabled(true);
+        webSettings.setDomStorageEnabled(true);
+        loadChart();
 
         seekBarCurrentWater.setProgress(currentWater.intValue());
         seekBarCurrentWater.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -298,7 +308,7 @@ public class WaterFragment extends Fragment {
             public void onFocusChange(View view, boolean b) {
                 try {
                     waterDuration = Integer.parseInt(editTextDur.getText().toString());
-                } catch (Exception e){
+                } catch (Exception e) {
                     editTextDur.setText("1");
                     waterDuration = 1;
                 }
@@ -364,50 +374,9 @@ public class WaterFragment extends Fragment {
         });
     }
 
-    private void setupGraph() {
-        XYSeries series3 = new SimpleXYSeries(parseSeries, SimpleXYSeries.ArrayFormat.Y_VALS_ONLY, "ParseSeries");
 
-        //waterPlot.getGraphWidget().getGridBackgroundPaint().setColor(Color.WHITE);
-        waterPlot.getGraphWidget().getDomainOriginLinePaint().setColor(Color.WHITE);
-        waterPlot.getGraphWidget().getRangeOriginLinePaint().setColor(Color.WHITE);
-
-        waterPlot.setBorderStyle(Plot.BorderStyle.SQUARE, null, null);
-        waterPlot.getBorderPaint().setStrokeWidth(1);
-        waterPlot.getBorderPaint().setAntiAlias(false);
-        waterPlot.getBorderPaint().setColor(Color.WHITE);
-
-        // setup our line fill paint to be a slightly transparent gradient:
-        Paint lineFill = new Paint();
-        lineFill.setAlpha(200);
-        lineFill.setShader(new LinearGradient(0, 0, 0, 250, Color.BLUE, Color.RED, Shader.TileMode.MIRROR));
-
-        LineAndPointFormatter formatter  = new LineAndPointFormatter(Color.rgb(0, 0,0), Color.BLUE, Color.RED, null);
-        formatter.setFillPaint(lineFill);
-        waterPlot.getGraphWidget().setPaddingRight(2);
-        waterPlot.addSeries(series3, formatter);
-
-        // customize our domain/range labels
-        waterPlot.setDomainLabel("Interval");
-        waterPlot.setRangeLabel("Water Level (%)");
-        waterPlot.getLegendWidget().setVisible(false);
-
-        // get rid of decimal points in our range labels:
-        waterPlot.setRangeValueFormat(new DecimalFormat("0"));
-        waterPlot.setDomainValueFormat(new DecimalFormat("0"));
-
-        waterPlot.getGraphWidget().setGridBackgroundPaint(null);
-
-        waterPlot.setRangeStep(XYStepMode.INCREMENT_BY_VAL, 20);
-        waterPlot.setDomainStep(XYStepMode.INCREMENT_BY_VAL, 1);
-        waterPlot.setTicksPerDomainLabel(5);
-        waterPlot.setRangeBoundaries(0, 100, BoundaryMode.FIXED);
-
-        waterPlot.redraw();
-        Log.i("success", ": setupGraph/redraw");
-    }
 
     private void preParseQuery() {
-        waterPlot.setVisibility(View.INVISIBLE);
         textViewLatestDate.setVisibility(View.INVISIBLE);
         textViewLatestWater.setVisibility(View.INVISIBLE);
 
@@ -416,6 +385,28 @@ public class WaterFragment extends Fragment {
         progressDialog.setMessage("Loading...");
         progressDialog.setCancelable(false);
         progressDialog.show();
+    }
+
+    private void loadChart() {
+        String content = null;
+        try {
+            AssetManager assetManager = getActivity().getAssets();
+            InputStream in = assetManager.open("water.html");
+            byte[] bytes = readFully(in);
+            content = new String(bytes, "UTF-8");
+        } catch (IOException e){
+            Log.e("loadChart", "An error occurred.", e);
+        }
+        webViewWater.loadDataWithBaseURL("file:///android_asset/", content, "text/html", "utf-8", null);
+    }
+
+    private static byte[] readFully(InputStream in) throws IOException {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        byte[] buffer = new byte[1024];
+        for (int count; (count = in.read(buffer)) != -1; ) {
+            out.write(buffer, 0, count);
+        }
+        return out.toByteArray();
     }
 
     private void parseQuery() {
@@ -460,7 +451,6 @@ public class WaterFragment extends Fragment {
 
     private void postParseQuery() {
         progressDialog.dismiss();
-        waterPlot.setVisibility(View.VISIBLE);
         textViewLatestDate.setVisibility(View.VISIBLE);
         textViewLatestWater.setVisibility(View.VISIBLE);
     }

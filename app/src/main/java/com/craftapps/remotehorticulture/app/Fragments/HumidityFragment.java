@@ -132,11 +132,6 @@ public class HumidityFragment extends Fragment {
             }
         }
 
-        /*for (ParseObject humid : humidList) {
-            Log.i("query", "= " + humid.getNumber("humidity"));
-            parseSeries.add(humid.getDouble("humidity"));
-        }*/
-
         maxHumid = high;
         minHumid = low;
 

@@ -158,90 +158,89 @@ public class LightingFragment extends Fragment {
                 .setPositiveButton("Set",
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int whichButton) {
+                                ParseQuery<ParseObject> onEventQuery = ParseQuery.getQuery("Event");
+                                onEventQuery.getInBackground(onEventId, new GetCallback<ParseObject>() {
+                                    @Override
+                                    public void done(final ParseObject onObject, ParseException e) {
+                                        int leftIndex = rangeBarLighting.getLeftIndex();
+                                        int hour = (leftIndex % 1440)/ 60;
+                                        int min = (leftIndex % 1440) - (hour * 60);
+
+                                        Calendar midnight = new GregorianCalendar();
+                                        Log.i("Current Time: " , midnight.getTime().toString());
+                                        midnight.add(Calendar.DAY_OF_YEAR, -2);
+                                        midnight.set(Calendar.HOUR_OF_DAY, hour);
+                                        midnight.set(Calendar.MINUTE, min);
+                                        midnight.set(Calendar.SECOND, 0);
+                                        midnight.set(Calendar.MILLISECOND, 0);
+                                        Log.i("Scheduled Time: " , midnight.getTime().toString());
+                                        final Date onEventDate = midnight.getTime();
+                                        Log.i("FinalDate Time: " , onEventDate.toString());
+
+                                        onObject.put("IntervalSeconds", 86400);
+                                        onObject.put("FirstOccurrence", onEventDate);
+
+                                        ParseQuery<ParseObject> offEventQuery = ParseQuery.getQuery("Event");
+                                        offEventQuery.getInBackground(offEventId, new GetCallback<ParseObject>() {
+                                            @Override
+                                            public void done(final ParseObject offObject, ParseException e) {
+                                                int rightIndex = rangeBarLighting.getRightIndex();
+                                                int hour = (rightIndex % 1440)/ 60;
+                                                int min = (rightIndex % 1440) - (hour * 60);
+
+                                                Calendar midnight = new GregorianCalendar();
+                                                Log.i("Current Time: " , midnight.getTime().toString());
+                                                midnight.add(Calendar.DAY_OF_YEAR, -2);
+                                                midnight.set(Calendar.HOUR_OF_DAY, hour);
+                                                midnight.set(Calendar.MINUTE, min);
+                                                midnight.set(Calendar.SECOND, 0);
+                                                midnight.set(Calendar.MILLISECOND, 0);
+                                                Log.i("Scheduled Time: " , midnight.getTime().toString());
+                                                final Date offEventDate = midnight.getTime();
+                                                Log.i("FinalDate Time: " , offEventDate.toString());
+
+                                                offObject.put("IntervalSeconds", 86400);
+                                                offObject.put("FirstOccurrence", offEventDate);
+
+                                                List<ParseObject> saveList = new ArrayList<ParseObject>() {
+                                                    { add(offObject); add(onObject); }
+                                                };
+
+                                                try {
+                                                    ParseObject.saveAll(saveList);
+                                                } catch (ParseException e1) {
+                                                    e1.printStackTrace();
+                                                }
+                                                try {
+                                                    offObject.save();
+                                                } catch (ParseException e1) {
+                                                    e1.printStackTrace();
+                                                }
+                                            }
+                                        });
+                                        try {
+                                            onObject.save();
+                                        } catch (ParseException e1) {
+                                            e1.printStackTrace();
+                                        }
+                                    }
+                                });
+
+                                
                                 ParseQuery<ParseObject> scheduleQuery = ParseQuery.getQuery("Schedule");
                                 scheduleQuery.getInBackground(scheduleId, new GetCallback<ParseObject>() {
                                     public void done(ParseObject scheduleObject, ParseException e) {
                                         if (e == null) {
                                             scheduleObject.put("OverrideState", overrideState);
-                                            try {
-                                                scheduleObject.save();
-                                            } catch (ParseException e1) {
-                                                e1.printStackTrace();
-                                            }
-                                            /*scheduleObject.saveInBackground(new SaveCallback() {
+                                            scheduleObject.saveInBackground(new SaveCallback() {
                                                 @Override
                                                 public void done(ParseException e) {
-                                                    Log.i("scheduleQuery: ", "success");
-                                                }
-                                            });*/
-                                        }
-                                    }
-                                });
-                                if(toggleValue == 1) {
-                                    ParseQuery<ParseObject> onEventQuery = ParseQuery.getQuery("Event");
-                                    onEventQuery.getInBackground(onEventId, new GetCallback<ParseObject>() {
-                                        @Override
-                                        public void done(ParseObject parseObject, ParseException e) {
-                                            int leftIndex = rangeBarLighting.getLeftIndex();
-                                            int hour = (leftIndex % 1440)/ 60;
-                                            int min = (leftIndex % 1440) - (hour * 60);
-
-                                            Calendar midnight = new GregorianCalendar();
-                                            Log.i("Current Time: " , midnight.getTime().toString());
-                                            midnight.set(Calendar.HOUR_OF_DAY, hour);
-                                            midnight.set(Calendar.MINUTE, min);
-                                            midnight.set(Calendar.SECOND, 0);
-                                            midnight.set(Calendar.MILLISECOND, 0);
-                                            Log.i("Scheduled Time: " , midnight.getTime().toString());
-                                            final Date onEventDate = midnight.getTime();
-                                            Log.i("FinalDate Time: " , onEventDate.toString());
-
-                                            parseObject.put("IntervalSeconds", 86400);
-                                            parseObject.put("FirstOccurrence", onEventDate);
-                                            try {
-                                                parseObject.save();
-                                            } catch (ParseException e1) {
-                                                e1.printStackTrace();
-                                            }
-                                            /*parseObject.saveInBackground(new SaveCallback() {
-                                                @Override
-                                                public void done(ParseException e) {
-                                                    Log.i("onEventQuery: ", onEventDate.toString());
-                                                }
-                                            });*/
-                                        }
-                                    });
-                                    ParseQuery<ParseObject> offEventQuery = ParseQuery.getQuery("Event");
-                                    offEventQuery.getInBackground(offEventId, new GetCallback<ParseObject>() {
-                                        @Override
-                                        public void done(ParseObject parseObject, ParseException e) {
-                                            int rightIndex = rangeBarLighting.getRightIndex();
-                                            int hour = (rightIndex % 1440)/ 60;
-                                            int min = (rightIndex % 1440) - (hour * 60);
-
-                                            Calendar midnight = new GregorianCalendar();
-                                            Log.i("Current Time: " , midnight.getTime().toString());
-                                            midnight.set(Calendar.HOUR_OF_DAY, hour);
-                                            midnight.set(Calendar.MINUTE, min);
-                                            midnight.set(Calendar.SECOND, 0);
-                                            midnight.set(Calendar.MILLISECOND, 0);
-                                            Log.i("Scheduled Time: " , midnight.getTime().toString());
-                                            final Date offEventDate = midnight.getTime();
-                                            Log.i("FinalDate Time: " , offEventDate.toString());
-
-                                            parseObject.put("IntervalSeconds", 86400);
-                                            parseObject.put("FirstOccurrence", offEventDate);
-                                            parseObject.saveInBackground(new SaveCallback() {
-                                                @Override
-                                                public void done(ParseException e) {
-                                                    Log.i("offEventQuery: ", offEventDate.toString());
                                                     refreshFragment();
                                                 }
                                             });
                                         }
-                                    });
-                                }
-                                //refreshFragment();
+                                    }
+                                });
                             }
                         }
                 );
