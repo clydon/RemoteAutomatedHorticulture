@@ -5,10 +5,6 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.res.AssetManager;
-import android.graphics.Color;
-import android.graphics.LinearGradient;
-import android.graphics.Paint;
-import android.graphics.Shader;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
@@ -22,21 +18,16 @@ import android.view.ViewGroup;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.Button;
-import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.androidplot.Plot;
-import com.androidplot.xy.BoundaryMode;
-import com.androidplot.xy.LineAndPointFormatter;
-import com.androidplot.xy.SimpleXYSeries;
-import com.androidplot.xy.XYPlot;
-import com.androidplot.xy.XYSeries;
-import com.androidplot.xy.XYStepMode;
 import com.craftapps.remotehorticulture.app.R;
+import com.craftapps.remotehorticulture.app.widgets.DateCard;
 import com.craftapps.remotehorticulture.app.widgets.MultiStateToggleButton;
 import com.craftapps.remotehorticulture.app.widgets.ToggleButton;
 import com.craftapps.remotehorticulture.app.widgets.VerticalSeekBar;
+import com.craftapps.remotehorticulture.app.widgets.WaterDataCard;
+import com.craftapps.remotehorticulture.app.widgets.WebViewCard;
 import com.parse.FindCallback;
 import com.parse.GetCallback;
 import com.parse.ParseException;
@@ -59,12 +50,15 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
+import it.gmariotti.cardslib.library.internal.CardHeader;
+import it.gmariotti.cardslib.library.view.CardView;
+
 public class WaterFragment extends Fragment {
 
     private WebView webViewWater;
-    private TextView textViewLatestWater;
-    private TextView textViewLatestDate;
-    private VerticalSeekBar seekBarCurrentWater;
+    private DateCard cardDate;
+    private WaterDataCard cardWaterData;
+    private WebViewCard cardWebView;
     private ProgressDialog progressDialog;
 
     private Button buttonTimeIncrease;
@@ -144,10 +138,29 @@ public class WaterFragment extends Fragment {
 
 
     private void initializeUIElements(View view){
-        webViewWater = (WebView) (view != null ? view.findViewById(R.id.webViewWater) : null);
-        seekBarCurrentWater = (VerticalSeekBar) (view != null ? view.findViewById(R.id.verticalSeekBar) : null);
-        textViewLatestWater = (TextView) (view != null ? view.findViewById(R.id.textView_latestWater) : null);
-        textViewLatestDate = (TextView) (view != null ? view.findViewById(R.id.textView_latestWaterDate) : null);
+        cardDate = new DateCard(view.getContext(), R.layout.card_date);
+        cardWaterData = new WaterDataCard(view.getContext(), R.layout.card_water_header);
+        cardWebView = new WebViewCard(view.getContext(), R.layout.card_webview);
+
+        CardHeader cardHeader = new CardHeader(view.getContext());
+        cardHeader.setTitle("Last Online");
+        cardDate.addCardHeader(cardHeader);
+        CardView cardViewDate = (CardView) (view != null ? view.findViewById(R.id.cardView_Date) : null);
+        cardViewDate.setCard(cardDate);
+
+        cardHeader.setTitle("Current Water Level");
+        cardWaterData.addCardHeader(cardHeader);
+        CardView cardViewWaterData = (CardView) (view != null ? view.findViewById(R.id.cardView_WaterData) : null);
+        cardViewWaterData.setCard(cardWaterData);
+
+        cardHeader.setTitle("Water Cycle");
+        cardWebView.addCardHeader(cardHeader);
+        CardView cardViewWebView = (CardView) (view != null ? view.findViewById(R.id.cardView_WaterWebView) : null);
+        cardViewWebView.setCard(cardWebView);
+
+        /*CardThumbnail thumb = new CardThumbnail(view.getContext());
+        thumb.setDrawableResource(R.drawable.ic_launcher);
+        cardDate.addCardThumbnail(thumb);*/
     }
 
     private void initializeDialogUIElements(View view) {
@@ -256,46 +269,26 @@ public class WaterFragment extends Fragment {
         waterDuration = Math.abs((int) TimeUnit.MILLISECONDS.toMinutes(duration));
         waterTimePerDay = 86400/eventList.get(0).getInt("IntervalSeconds");
 
-        currentWater = monitorDataList.get(0).getNumber("waterLevel");
+
+        Number waterLevel = monitorDataList.get(0).getNumber("waterLevel");
+        double waterLevelDb = (Double.parseDouble(waterLevel.toString())/700.0) * 100.0;
+        DecimalFormat df = new DecimalFormat("#.##");
+        currentWater = Double.parseDouble(df.format(waterLevelDb));
+
         Format formatter = new SimpleDateFormat("hh:mm a - EEE MMMM d");
         currentWaterDate = formatter.format(monitorDataList.get(0).getCreatedAt());
         Log.i("currentWater", "= " + currentWater);
         Log.i("currentWaterDate", "= " + currentWaterDate);
 
-        for (ParseObject water : monitorDataList) {
-            Log.i("query", "= " + water.getDouble("waterLevel"));
-            parseSeries.add(water.getDouble("waterLevel"));
-        }
         applyValuesToUI();
     }
 
     private void applyValuesToUI() {
-        webViewWater.setVerticalScrollBarEnabled(false);
-        WebSettings webSettings = webViewWater.getSettings();
-        webSettings.setJavaScriptEnabled(true);
-        webSettings.setDomStorageEnabled(true);
-        loadChart();
+        cardWebView.setWebView("water.html");
+        cardWaterData.setValue(currentWater);
+        cardWaterData.setGauge(currentWater.floatValue());
+        cardDate.setDate(currentWaterDate);
 
-        seekBarCurrentWater.setProgress(currentWater.intValue());
-        seekBarCurrentWater.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
-                seekBar.setProgress(currentWater.intValue());
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-                seekBar.setProgress(currentWater.intValue());
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-                seekBar.setProgress(currentWater.intValue());
-            }
-        });
-
-        textViewLatestWater.setText(currentWater.toString() + "%");
-        textViewLatestDate.setText(currentWaterDate);
         Log.i("success", ": apply values to UI");
     }
 
@@ -377,38 +370,12 @@ public class WaterFragment extends Fragment {
     }
 
 
-
     private void preParseQuery() {
-        textViewLatestDate.setVisibility(View.INVISIBLE);
-        textViewLatestWater.setVisibility(View.INVISIBLE);
-
         progressDialog = new ProgressDialog(getActivity());
         progressDialog.setTitle("Please Wait..");
         progressDialog.setMessage("Loading...");
         progressDialog.setCancelable(false);
         progressDialog.show();
-    }
-
-    private void loadChart() {
-        String content = null;
-        try {
-            AssetManager assetManager = getActivity().getAssets();
-            InputStream in = assetManager.open("water.html");
-            byte[] bytes = readFully(in);
-            content = new String(bytes, "UTF-8");
-        } catch (IOException e){
-            Log.e("loadChart", "An error occurred.", e);
-        }
-        webViewWater.loadDataWithBaseURL("file:///android_asset/", content, "text/html", "utf-8", null);
-    }
-
-    private static byte[] readFully(InputStream in) throws IOException {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        byte[] buffer = new byte[1024];
-        for (int count; (count = in.read(buffer)) != -1; ) {
-            out.write(buffer, 0, count);
-        }
-        return out.toByteArray();
     }
 
     private void parseQuery() {
@@ -462,8 +429,6 @@ public class WaterFragment extends Fragment {
 
     private void postParseQuery() {
         progressDialog.dismiss();
-        textViewLatestDate.setVisibility(View.VISIBLE);
-        textViewLatestWater.setVisibility(View.VISIBLE);
     }
 
     private void refreshFragment() {

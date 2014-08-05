@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="10dp">
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:weightSum="10">
+
+        <com.craftapps.remotehorticulture.app.widgets.VerticalSeekBar
+            android:layout_width="wrap_content"
+            android:layout_height="150dp"
+            android:layout_marginLeft="25dp"
+            android:max="120"
+            android:id="@+id/verticalSeekBar"
+            android:progress="0"
+            android:thumb="@android:color/transparent"
+            android:indeterminate="false"
+            android:layout_weight="1" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="150dp"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="0.00° F"
+            android:id="@+id/textView_latestTemp"
+            android:gravity="center"
+            android:textSize="55dp"
+            android:typeface="serif"
+            android:maxLines="1"
+            android:layout_weight="9" />
+    </LinearLayout>
+
+</LinearLayout>

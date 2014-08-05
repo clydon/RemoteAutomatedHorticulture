@@ -26,4 +26,5 @@ dependencies {
     compile 'com.android.support:support-v4:19.1.0'
     compile files('libs/androidplot-core-0.6.0.jar')
     compile files('libs/Parse-1.5.0.jar')
+    compile 'com.github.gabrielemariotti.cards:library:1.8.0'
 }

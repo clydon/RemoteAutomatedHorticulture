@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="10dp">
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:weightSum="2">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="Min Temp:"
+            android:id="@+id/textView_minTempLabel"
+            android:padding="16dp"
+            android:typeface="serif"
+            android:layout_weight="1"
+            android:gravity="center" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="Max Temp:"
+            android:id="@+id/textView_maxTempLabel"
+            android:padding="16dp"
+            android:typeface="serif"
+            android:layout_weight="1"
+            android:gravity="center" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:weightSum="2">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="0.00 F"
+            android:id="@+id/textView_minTemp"
+            android:typeface="serif"
+            android:gravity="center|top"
+            android:paddingBottom="25dp"
+            android:layout_weight="1"
+            android:textColor="#ff287adc" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="0.00 F"
+            android:id="@+id/textView_maxTemp"
+            android:gravity="center|top"
+            android:typeface="serif"
+            android:paddingBottom="25dp"
+            android:layout_weight="1"
+            android:textColor="#ffff2f23" />
+
+    </LinearLayout>
+
+</LinearLayout>

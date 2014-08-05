@@ -1,56 +1,46 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent" android:layout_height="match_parent">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:card="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
-    <com.craftapps.remotehorticulture.app.widgets.VerticalSeekBar
-        android:layout_width="wrap_content"
-        android:layout_height="200dp"
-        android:layout_marginLeft="25dp"
-        android:layout_centerHorizontal="false"
-        android:max="100"
-        android:id="@+id/verticalSeekBar"
-        android:progress="50"
-        android:thumb="@android:color/transparent"
-        android:layout_alignBottom="@+id/textView_latestWater"
-        android:indeterminate="false" />
-
-    <TextView
-        android:layout_width="250dp"
-        android:layout_height="200dp"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="0.00 %"
-        android:id="@+id/textView_latestWater"
-        android:gravity="center"
-        android:textSize="55dp"
+    <it.gmariotti.cardslib.library.view.CardView
+        android:id="@+id/cardView_Date"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"
-        android:layout_toRightOf="@+id/verticalSeekBar"
-        android:paddingTop="30dp"
-        android:typeface="serif" />
+        android:layout_alignParentStart="true" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="50dp"
-        android:textAppearance="?android:attr/textAppearanceSmall"
-        android:text="Date"
-        android:id="@+id/textView_latestWaterDate"
-        android:gravity="center"
-        android:typeface="serif"
-        android:layout_alignBottom="@+id/textView_latestWater"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"
-        android:layout_alignLeft="@+id/textView_latestWater"
-        android:layout_alignStart="@+id/textView_latestWater" />
+    <it.gmariotti.cardslib.library.view.CardView
+        android:id="@+id/cardView_WaterData"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/cardView_Date"
+        android:layout_alignParentStart="true" />
 
-    <WebView
+    <it.gmariotti.cardslib.library.view.CardView
+        android:id="@+id/cardView_WaterWebView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/cardView_WaterData"
+        android:layout_alignParentStart="true" />
+
+    <!--<com.craftapps.remotehorticulture.app.widgets.GaugeView
+        android:id="@+id/gaugeView_waterLevel"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        app:showScale="true"
+        android:layout_alignBottom="@+id/verticalSeekBar"
+        android:layout_centerHorizontal="true" />-->
+
+    <!--<WebView
         android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
+        android:layout_height="200dp"
         android:id="@+id/webViewWater"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_below="@+id/textView_latestWaterDate" />
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true" />-->
 
 
 </RelativeLayout>
