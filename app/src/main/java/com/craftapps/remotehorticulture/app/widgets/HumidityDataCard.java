@@ -9,7 +9,7 @@ import android.widget.TextView;
 import com.craftapps.remotehorticulture.app.R;
 import it.gmariotti.cardslib.library.internal.Card;
 
-public class TemperatureDataCard extends Card {
+public class HumidityDataCard extends Card {
 
     protected TextView mValue;
     protected VerticalSeekBar mVerticalSeekBar;
@@ -18,8 +18,8 @@ public class TemperatureDataCard extends Card {
      * Constructor with a custom inner layout
      * @param context
      */
-    public TemperatureDataCard(Context context) {
-        this(context, R.layout.card_temperature_header);
+    public HumidityDataCard(Context context) {
+        this(context, R.layout.card_humidity_header);
     }
 
     /**
@@ -27,7 +27,7 @@ public class TemperatureDataCard extends Card {
      * @param context
      * @param innerLayout
      */
-    public TemperatureDataCard(Context context, int innerLayout) {
+    public HumidityDataCard(Context context, int innerLayout) {
         super(context, innerLayout);
         init();
     }
@@ -50,11 +50,11 @@ public class TemperatureDataCard extends Card {
     @Override
     public void setupInnerViewElements(ViewGroup parent, View view) {
         //Retrieve elements
-        mValue = (TextView) parent.findViewById(R.id.textView_TempValue);
+        mValue = (TextView) parent.findViewById(R.id.textView_HumidValue);
         mVerticalSeekBar = (VerticalSeekBar) parent.findViewById(R.id.verticalSeekBar);
 
         if (mValue !=null)
-            mValue.setText("0.0° F");
+            mValue.setText("0.0%");
         if (mVerticalSeekBar !=null)
             mVerticalSeekBar.setProgress(0);
 
@@ -62,27 +62,27 @@ public class TemperatureDataCard extends Card {
 
     public void setValue(Number value) {
         if (value != null) {
-            mValue.setText(value.toString() + "° F");
+            mValue.setText(value.toString() + "%");
         }
     }
 
     public void setSeekBar(final Number value) {
-        final int temp = value.intValue();
-        mVerticalSeekBar.setProgress(temp);
+        final int humid = value.intValue();
+        mVerticalSeekBar.setProgress(humid);
         mVerticalSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
-                seekBar.setProgress(temp);
+                seekBar.setProgress(humid);
             }
 
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
-                seekBar.setProgress(temp);
+                seekBar.setProgress(humid);
             }
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                seekBar.setProgress(temp);
+                seekBar.setProgress(humid);
             }
         });
     }

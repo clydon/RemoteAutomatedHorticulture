@@ -3,6 +3,7 @@ package com.craftapps.remotehorticulture.app.Fragments;
 
 import android.app.ProgressDialog;
 import android.content.res.AssetManager;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
@@ -20,7 +21,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.craftapps.remotehorticulture.app.R;
+import com.craftapps.remotehorticulture.app.widgets.HumidityDataCard;
+import com.craftapps.remotehorticulture.app.widgets.HumidityMinMaxCard;
+import com.craftapps.remotehorticulture.app.widgets.TemperatureDataCard;
+import com.craftapps.remotehorticulture.app.widgets.TemperatureMinMaxCard;
 import com.craftapps.remotehorticulture.app.widgets.VerticalSeekBar;
+import com.craftapps.remotehorticulture.app.widgets.WebViewCard;
 import com.parse.FindCallback;
 import com.parse.ParseException;
 import com.parse.ParseObject;
@@ -36,16 +42,19 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import it.gmariotti.cardslib.library.internal.CardHeader;
+import it.gmariotti.cardslib.library.view.CardView;
+
 public class HumidityFragment extends Fragment {
 
-    private TextView textViewLatestHumid;
-    private TextView textViewLatestDate;
-    private TextView textViewMinHumid;
-    private TextView textViewMaxHumid;
-    private VerticalSeekBar seekBarCurrentHumid;
-    private WebView webViewHumid;
+    private HumidityDataCard cardHumidityData;
+    private HumidityMinMaxCard cardHumidityMinMax;
+    private WebViewCard cardWebView;
+
+    private TextView textViewDate;
 
     private ProgressDialog progressDialog;
+    private Date currentDate;
     private Number currentHumid;
     private Number minHumid;
     private Number maxHumid;
@@ -106,18 +115,34 @@ public class HumidityFragment extends Fragment {
     }
 
     private void initializeUIElements(View view){
-        seekBarCurrentHumid = (VerticalSeekBar) (view != null ? view.findViewById(R.id.verticalSeekBar) : null);
-        textViewLatestHumid = (TextView) (view != null ? view.findViewById(R.id.textView_latestHumid) : null);
-        textViewLatestDate = (TextView) (view != null ? view.findViewById(R.id.textView_latestHumidDate) : null);
-        textViewMinHumid = (TextView) (view != null ? view.findViewById(R.id.textView_minHumid) : null);
-        textViewMaxHumid = (TextView) (view != null ? view.findViewById(R.id.textView_maxHumid) : null);
-        webViewHumid = (WebView) (view != null ? view.findViewById(R.id.webView) : null);
+        textViewDate = (TextView) (view != null ? view.findViewById(R.id.textView_Date) : null);
+
+        cardHumidityData = new HumidityDataCard(view.getContext(), R.layout.card_humidity_header);
+        cardHumidityMinMax = new HumidityMinMaxCard(view.getContext(), R.layout.card_humidity_minmax);
+        cardWebView = new WebViewCard(view.getContext(), R.layout.card_webview);
+
+        CardHeader cardHeader = new CardHeader(view.getContext());
+        cardHeader.setTitle("Current Humidity");
+        cardHumidityData.addCardHeader(cardHeader);
+        CardView cardViewHumidityData = (CardView) (view != null ? view.findViewById(R.id.cardView_HumidityData) : null);
+        cardViewHumidityData.setCard(cardHumidityData);
+
+        cardHeader.setTitle("Past Week");
+        cardHumidityMinMax.addCardHeader(cardHeader);
+        CardView cardViewHumidityMinMaxData = (CardView) (view != null ? view.findViewById(R.id.cardView_HumidityMinMax) : null);
+        cardViewHumidityMinMaxData.setCard(cardHumidityMinMax);
+
+        cardHeader.setTitle("Trends");
+        cardWebView.addCardHeader(cardHeader);
+        CardView cardViewWebView = (CardView) (view != null ? view.findViewById(R.id.cardView_HumidityWebView) : null);
+        cardViewWebView.setCard(cardWebView);
     }
 
     private void setGlobalValues(List<ParseObject> humidList) {
         currentHumid = humidList.get(0).getNumber("humidity");
+        currentDate = humidList.get(0).getCreatedAt();
         Format formatter = new SimpleDateFormat("hh:mm a - EEE MMMM d");
-        currentHumidDate = formatter.format(humidList.get(0).getCreatedAt());
+        currentHumidDate = formatter.format(currentDate);
 
         double high = humidList.get(0).getNumber("humidity").doubleValue();
         double low = humidList.get(0).getNumber("humidity").doubleValue();
@@ -141,68 +166,27 @@ public class HumidityFragment extends Fragment {
     }
 
     private void applyValuesToUI() {
-        webViewHumid.setVerticalScrollBarEnabled(false);
-        WebSettings webSettings = webViewHumid.getSettings();
-        webSettings.setJavaScriptEnabled(true);
-        webSettings.setDomStorageEnabled(true);
-        loadChart();
-
-        seekBarCurrentHumid.setProgress(currentHumid.intValue());
-        seekBarCurrentHumid.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
-                seekBar.setProgress(currentHumid.intValue());
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-                seekBar.setProgress(currentHumid.intValue());
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-                seekBar.setProgress(currentHumid.intValue());
-            }
-        });
-
-        textViewLatestHumid.setText(currentHumid.toString() + "%");
-        textViewLatestDate.setText(currentHumidDate);
-
-
-        Log.i("minHumid", "= " + minHumid);
-        Log.i("maxHumid", "= " + maxHumid);
-
-        textViewMinHumid.setText(minHumid + "%");
-        textViewMaxHumid.setText(maxHumid + "%");
-    }
-
-    private void loadChart() {
-        String content = null;
-        try {
-            AssetManager assetManager = getActivity().getAssets();
-            InputStream in = assetManager.open("humidity.html");
-            byte[] bytes = readFully(in);
-            content = new String(bytes, "UTF-8");
-        } catch (IOException e){
-            Log.e("loadChart", "An error occurred.", e);
+        long THIRTYMINUTES = 30 * 60 * 1000;
+        if(currentDate.getTime() > System.currentTimeMillis() - THIRTYMINUTES) {
+            textViewDate.setBackgroundColor(Color.parseColor("#D2FF57"));
+            textViewDate.setText("Online:   " + currentHumidDate);
         }
-        webViewHumid.loadDataWithBaseURL("file:///android_asset/", content, "text/html", "utf-8", null);
-    }
-
-    private static byte[] readFully(InputStream in) throws IOException {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        byte[] buffer = new byte[1024];
-        for (int count; (count = in.read(buffer)) != -1; ) {
-            out.write(buffer, 0, count);
+        else {
+            textViewDate.setBackgroundColor(Color.parseColor("#CC270E"));
+            textViewDate.setText("Last Online:   " + currentHumidDate);
         }
-        return out.toByteArray();
+
+        cardHumidityData.setSeekBar(currentHumid);
+        cardHumidityData.setValue(currentHumid);
+        cardHumidityMinMax.setValues(minHumid, maxHumid);
+        cardWebView.setWebView("humidity.html");
     }
 
     private void preParseQuery() {
-        textViewLatestDate.setVisibility(View.INVISIBLE);
+        /*textViewLatestDate.setVisibility(View.INVISIBLE);
         textViewLatestHumid.setVisibility(View.INVISIBLE);
         textViewMaxHumid.setVisibility(View.INVISIBLE);
-        textViewMinHumid.setVisibility(View.INVISIBLE);
+        textViewMinHumid.setVisibility(View.INVISIBLE);*/
 
         progressDialog = new ProgressDialog(getActivity());
         progressDialog.setTitle("Please Wait..");
@@ -238,10 +222,10 @@ public class HumidityFragment extends Fragment {
     }
 
     private void postParseQuery() {
-        textViewLatestDate.setVisibility(View.VISIBLE);
+        /*textViewLatestDate.setVisibility(View.VISIBLE);
         textViewLatestHumid.setVisibility(View.VISIBLE);
         textViewMaxHumid.setVisibility(View.VISIBLE);
-        textViewMinHumid.setVisibility(View.VISIBLE);
+        textViewMinHumid.setVisibility(View.VISIBLE);*/
         progressDialog.dismiss();
     }
 

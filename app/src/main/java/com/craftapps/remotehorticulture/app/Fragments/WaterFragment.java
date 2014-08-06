@@ -55,7 +55,6 @@ import it.gmariotti.cardslib.library.view.CardView;
 
 public class WaterFragment extends Fragment {
 
-    private WebView webViewWater;
     private DateCard cardDate;
     private WaterDataCard cardWaterData;
     private WebViewCard cardWebView;

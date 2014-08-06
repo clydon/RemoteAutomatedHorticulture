@@ -3,106 +3,46 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent" android:layout_height="match_parent">
 
-    <com.craftapps.remotehorticulture.app.widgets.VerticalSeekBar
-        android:layout_width="wrap_content"
-        android:layout_height="200dp"
-        android:layout_marginLeft="25dp"
-        android:layout_centerHorizontal="false"
-        android:max="100"
-        android:id="@+id/verticalSeekBar"
-        android:progress="0"
-        android:thumb="@android:color/transparent"
-        android:layout_alignBottom="@+id/textView_latestHumid" />
-
     <TextView
-        android:layout_width="250dp"
-        android:layout_height="150dp"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="0.00 %"
-        android:id="@+id/textView_latestHumid"
-        android:gravity="center"
-        android:textSize="55dp"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"
-        android:layout_toRightOf="@+id/verticalSeekBar"
-        android:paddingTop="30dp"
-        android:typeface="serif" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="50dp"
-        android:textAppearance="?android:attr/textAppearanceSmall"
-        android:text="Date"
-        android:id="@+id/textView_latestHumidDate"
-        android:gravity="center"
-        android:typeface="serif"
-        android:layout_above="@+id/textView_minHumidLabel"
-        android:layout_alignLeft="@+id/textView_latestHumid"
-        android:layout_alignStart="@+id/textView_latestHumid"
-        android:layout_alignRight="@+id/textView_latestHumid"
-        android:layout_alignEnd="@+id/textView_latestHumid" />
-
-    <WebView
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/textView_Date"
+        android:text="Last Online: "
+        android:padding="16dp"
+        android:typeface="normal"
+        android:textSize="16dp" />
+    <ScrollView
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:id="@+id/webView"
-        android:layout_below="@+id/textView_minHumid"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
+        android:id="@+id/scrollView"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/textView_Date">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="Min Humidity:"
-        android:id="@+id/textView_minHumidLabel"
-        android:padding="16dp"
-        android:typeface="serif"
-        android:layout_below="@+id/textView_latestHumid"
-        android:layout_alignLeft="@+id/textView_latestHumidDate"
-        android:layout_alignStart="@+id/textView_latestHumidDate" />
+        <RelativeLayout
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="Max Humidity:"
-        android:id="@+id/textView_maxHumidLabel"
-        android:padding="16dp"
-        android:typeface="serif"
-        android:layout_alignTop="@+id/textView_minHumidLabel"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true" />
+            <it.gmariotti.cardslib.library.view.CardView
+                android:id="@+id/cardView_HumidityData"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="-0.00 %"
-        android:id="@+id/textView_minHumid"
-        android:typeface="serif"
-        android:layout_alignTop="@+id/textView_maxHumid"
-        android:layout_toRightOf="@+id/verticalSeekBar"
-        android:layout_alignRight="@+id/textView_minHumidLabel"
-        android:layout_alignEnd="@+id/textView_minHumidLabel"
-        android:gravity="center_horizontal|top"
-        android:paddingBottom="25dp" />
+            <it.gmariotti.cardslib.library.view.CardView
+                android:id="@+id/cardView_HumidityMinMax"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/cardView_HumidityData"
+                android:layout_alignParentStart="true" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="0.00 %"
-        android:id="@+id/textView_maxHumid"
-        android:gravity="center_horizontal|top"
-        android:typeface="serif"
-        android:layout_below="@+id/textView_maxHumidLabel"
-        android:layout_alignRight="@+id/textView_latestHumidDate"
-        android:layout_alignEnd="@+id/textView_latestHumidDate"
-        android:layout_alignLeft="@+id/textView_maxHumidLabel"
-        android:layout_alignStart="@+id/textView_maxHumidLabel"
-        android:paddingBottom="25dp" />
+            <it.gmariotti.cardslib.library.view.CardView
+                android:id="@+id/cardView_HumidityWebView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_below="@+id/cardView_HumidityMinMax"
+                android:layout_alignParentStart="true" />
+        </RelativeLayout>
+    </ScrollView>
 
 
 </RelativeLayout>

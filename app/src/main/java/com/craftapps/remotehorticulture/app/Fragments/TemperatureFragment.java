@@ -5,6 +5,7 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.res.AssetManager;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
@@ -15,7 +16,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.EditText;
 import android.widget.SeekBar;
@@ -23,7 +23,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.craftapps.remotehorticulture.app.R;
+import com.craftapps.remotehorticulture.app.widgets.DateCard;
+import com.craftapps.remotehorticulture.app.widgets.TemperatureDataCard;
+import com.craftapps.remotehorticulture.app.widgets.TemperatureMinMaxCard;
 import com.craftapps.remotehorticulture.app.widgets.VerticalSeekBar;
+import com.craftapps.remotehorticulture.app.widgets.WebViewCard;
 import com.parse.FindCallback;
 import com.parse.GetCallback;
 import com.parse.ParseException;
@@ -42,14 +46,16 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import it.gmariotti.cardslib.library.internal.CardHeader;
+import it.gmariotti.cardslib.library.view.CardView;
+
 public class TemperatureFragment extends Fragment {
 
-    private TextView textViewLatestTemp;
-    private TextView textViewLatestDate;
-    private TextView textViewMinTemp;
-    private TextView textViewMaxTemp;
-    private VerticalSeekBar seekBarCurrentTemp;
+    private TemperatureDataCard cardTemperatureData;
+    private TemperatureMinMaxCard cardTemperatureMinMax;
+    private WebViewCard cardWebView;
 
+    private TextView textViewDate;
     private VerticalSeekBar seekBarDialogMin;
     private VerticalSeekBar seekBarDialogMax;
     private TextView textViewDialogCurrentTemp;
@@ -60,6 +66,7 @@ public class TemperatureFragment extends Fragment {
     final List<Double> parseSeries = new ArrayList<Double>();
     private ProgressDialog progressDialog;
     private Number currentTemp;
+    private Date currentDate;
     private Number minTemp;
     private Number maxTemp;
     private Number lowTemp;
@@ -126,12 +133,27 @@ public class TemperatureFragment extends Fragment {
 
 
     private void initializeUIElements(View view){
-        seekBarCurrentTemp = (VerticalSeekBar) (view != null ? view.findViewById(R.id.verticalSeekBar) : null);
-        textViewLatestTemp = (TextView) (view != null ? view.findViewById(R.id.textView_latestTemp) : null);
-        textViewLatestDate = (TextView) (view != null ? view.findViewById(R.id.textViewDate) : null);
-        textViewMinTemp = (TextView) (view != null ? view.findViewById(R.id.textView_minTemp) : null);
-        textViewMaxTemp = (TextView) (view != null ? view.findViewById(R.id.textView_maxTemp) : null);
-        webViewTemp = (WebView) (view != null ? view.findViewById(R.id.webView) : null);
+        textViewDate = (TextView) (view != null ? view.findViewById(R.id.textView_Date) : null);
+
+        cardTemperatureData = new TemperatureDataCard(view.getContext(), R.layout.card_temperature_header);
+        cardTemperatureMinMax = new TemperatureMinMaxCard(view.getContext(), R.layout.card_temperature_minmax);
+        cardWebView = new WebViewCard(view.getContext(), R.layout.card_webview);
+
+        CardHeader cardHeader = new CardHeader(view.getContext());
+        cardHeader.setTitle("Current Temperature");
+        cardTemperatureData.addCardHeader(cardHeader);
+        CardView cardViewTemperatureData = (CardView) (view != null ? view.findViewById(R.id.cardView_TemperatureData) : null);
+        cardViewTemperatureData.setCard(cardTemperatureData);
+
+        cardHeader.setTitle("Past Week");
+        cardTemperatureMinMax.addCardHeader(cardHeader);
+        CardView cardViewTemperatureMinMaxData = (CardView) (view != null ? view.findViewById(R.id.cardView_TemperatureMinMax) : null);
+        cardViewTemperatureMinMaxData.setCard(cardTemperatureMinMax);
+
+        cardHeader.setTitle("Trends");
+        cardWebView.addCardHeader(cardHeader);
+        CardView cardViewWebView = (CardView) (view != null ? view.findViewById(R.id.cardView_TemperatureWebView) : null);
+        cardViewWebView.setCard(cardWebView);
     }
 
     private void initializeDialogUIElements(View view) {
@@ -179,7 +201,8 @@ public class TemperatureFragment extends Fragment {
         automationControlId = automationControlList.get(0).getObjectId();
         currentTemp = monitorDataList.get(0).getNumber("fahrenheit");
         Format formatter = new SimpleDateFormat("hh:mm a - EEE MMMM d");
-        currentTempDate = formatter.format(monitorDataList.get(0).getCreatedAt());
+        currentDate = monitorDataList.get(0).getCreatedAt();
+        currentTempDate = formatter.format(currentDate);
         minTemp = automationControlList.get(0).getNumber("TempMin");
         maxTemp = automationControlList.get(0).getNumber("TempMax");
 
@@ -200,7 +223,6 @@ public class TemperatureFragment extends Fragment {
         highTemp = high;
         lowTemp = low;
 
-
         for (ParseObject temp : monitorDataList) {
             Log.i("query", "= " + temp.getNumber("fahrenheit"));
             parseSeries.add(temp.getDouble("fahrenheit"));
@@ -210,57 +232,20 @@ public class TemperatureFragment extends Fragment {
     }
 
     private void applyValuesToUI() {
-        webViewTemp.setVerticalScrollBarEnabled(false);
-        WebSettings webSettings = webViewTemp.getSettings();
-        webSettings.setJavaScriptEnabled(true);
-        webSettings.setDomStorageEnabled(true);
-        loadChart();
-
-        seekBarCurrentTemp.setProgress(currentTemp.intValue());
-        seekBarCurrentTemp.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
-                seekBar.setProgress(currentTemp.intValue());
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-                seekBar.setProgress(currentTemp.intValue());
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-                seekBar.setProgress(currentTemp.intValue());
-            }
-        });
-
-        textViewLatestTemp.setText(currentTemp.toString() + "° F");
-        textViewLatestDate.setText(currentTempDate);
-
-        textViewMinTemp.setText(lowTemp + "° F");
-        textViewMaxTemp.setText(highTemp + "° F");
-    }
-
-    private void loadChart() {
-        String content = null;
-        try {
-            AssetManager assetManager = getActivity().getAssets();
-            InputStream in = assetManager.open("temperature.html");
-            byte[] bytes = readFully(in);
-            content = new String(bytes, "UTF-8");
-        } catch (IOException e){
-            Log.e("loadChart", "An error occurred.", e);
+        long THIRTYMINUTES = 30 * 60 * 1000;
+        if(currentDate.getTime() > System.currentTimeMillis() - THIRTYMINUTES) {
+            textViewDate.setBackgroundColor(Color.parseColor("#D2FF57"));
+            textViewDate.setText("Online:   " + currentTempDate);
         }
-        webViewTemp.loadDataWithBaseURL("file:///android_asset/", content, "text/html", "utf-8", null);
-    }
-
-    private static byte[] readFully(InputStream in) throws IOException {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        byte[] buffer = new byte[1024];
-        for (int count; (count = in.read(buffer)) != -1; ) {
-            out.write(buffer, 0, count);
+        else {
+            textViewDate.setBackgroundColor(Color.parseColor("#CC270E"));
+            textViewDate.setText("Last Online:   " + currentTempDate);
         }
-        return out.toByteArray();
+
+        cardTemperatureData.setSeekBar(currentTemp);
+        cardTemperatureData.setValue(currentTemp);
+        cardTemperatureMinMax.setValues(lowTemp, highTemp);
+        cardWebView.setWebView("temperature.html");
     }
 
     private void applyValuesToDialogUI() {
@@ -316,10 +301,10 @@ public class TemperatureFragment extends Fragment {
     }
 
     private void preParseQuery() {
-        textViewLatestDate.setVisibility(View.INVISIBLE);
+        /*textViewLatestDate.setVisibility(View.INVISIBLE);
         textViewLatestTemp.setVisibility(View.INVISIBLE);
         textViewMaxTemp.setVisibility(View.INVISIBLE);
-        textViewMinTemp.setVisibility(View.INVISIBLE);
+        textViewMinTemp.setVisibility(View.INVISIBLE);*/
 
         progressDialog = new ProgressDialog(getActivity());
         progressDialog.setTitle("Please Wait..");
@@ -363,10 +348,10 @@ public class TemperatureFragment extends Fragment {
     }
 
     private void postParseQuery() {
-        textViewLatestDate.setVisibility(View.VISIBLE);
+        /*textViewLatestDate.setVisibility(View.VISIBLE);
         textViewLatestTemp.setVisibility(View.VISIBLE);
         textViewMaxTemp.setVisibility(View.VISIBLE);
-        textViewMinTemp.setVisibility(View.VISIBLE);
+        textViewMinTemp.setVisibility(View.VISIBLE);*/
         progressDialog.dismiss();
     }
 

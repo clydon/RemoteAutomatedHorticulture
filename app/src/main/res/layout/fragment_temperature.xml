@@ -1,110 +1,66 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent" android:layout_height="match_parent">
-
-    <com.craftapps.remotehorticulture.app.widgets.VerticalSeekBar
-        android:layout_width="wrap_content"
-        android:layout_height="200dp"
-        android:layout_marginLeft="25dp"
-        android:layout_centerHorizontal="false"
-        android:max="120"
-        android:id="@+id/verticalSeekBar"
-        android:progress="0"
-        android:thumb="@android:color/transparent"
-        android:layout_alignBottom="@+id/textView_latestTemp"
-        android:indeterminate="false" />
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:card="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
     <TextView
-        android:layout_width="250dp"
-        android:layout_height="150dp"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="0.00° F"
-        android:id="@+id/textView_latestTemp"
-        android:gravity="center"
-        android:textSize="55dp"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"
-        android:layout_toRightOf="@+id/verticalSeekBar"
-        android:paddingTop="30dp"
-        android:typeface="serif"
-        android:maxLines="1" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="50dp"
-        android:textAppearance="?android:attr/textAppearanceSmall"
-        android:text="Date"
-        android:id="@+id/textViewDate"
-        android:gravity="center"
-        android:typeface="serif"
-        android:layout_above="@+id/textView_minTempLabel"
-        android:layout_alignLeft="@+id/textView_latestTemp"
-        android:layout_alignStart="@+id/textView_latestTemp"
-        android:layout_alignRight="@+id/textView_latestTemp"
-        android:layout_alignEnd="@+id/textView_latestTemp" />
-
-    <TextView
-        android:layout_width="wrap_content"
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="Min Temp:"
-        android:id="@+id/textView_minTempLabel"
+        android:id="@+id/textView_Date"
+        android:text="Last Online: "
         android:padding="16dp"
-        android:typeface="serif"
-        android:layout_below="@+id/textView_latestTemp"
-        android:layout_alignLeft="@+id/textViewDate"
-        android:layout_alignStart="@+id/textViewDate" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="Max Temp:"
-        android:id="@+id/textView_maxTempLabel"
-        android:padding="16dp"
-        android:typeface="serif"
-        android:layout_alignTop="@+id/textView_minTempLabel"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="0.00 F"
-        android:id="@+id/textView_minTemp"
-        android:typeface="serif"
-        android:layout_alignTop="@+id/textView_maxTemp"
-        android:layout_toRightOf="@+id/verticalSeekBar"
-        android:layout_alignRight="@+id/textView_minTempLabel"
-        android:layout_alignEnd="@+id/textView_minTempLabel"
-        android:gravity="center_horizontal|top"
-        android:paddingBottom="25dp" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="0.00 F"
-        android:id="@+id/textView_maxTemp"
-        android:gravity="center_horizontal|top"
-        android:typeface="serif"
-        android:layout_below="@+id/textView_maxTempLabel"
-        android:layout_alignRight="@+id/textViewDate"
-        android:layout_alignEnd="@+id/textViewDate"
-        android:layout_alignLeft="@+id/textView_maxTempLabel"
-        android:layout_alignStart="@+id/textView_maxTempLabel"
-        android:paddingBottom="25dp" />
-
-    <WebView
+        android:typeface="normal"
+        android:textSize="16dp" />
+    <ScrollView
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:id="@+id/webView"
-        android:layout_below="@+id/textView_minTemp"
-        android:layout_alignParentLeft="true"
+        android:id="@+id/scrollView"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/textView_Date">
+
+        <RelativeLayout
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent">
+
+            <it.gmariotti.cardslib.library.view.CardView
+        android:id="@+id/cardView_TemperatureData"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:layout_alignParentStart="true" />
+
+    <it.gmariotti.cardslib.library.view.CardView
+        android:id="@+id/cardView_TemperatureMinMax"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/cardView_TemperatureData"
+        android:layout_alignParentStart="true" />
+
+    <it.gmariotti.cardslib.library.view.CardView
+        android:id="@+id/cardView_TemperatureWebView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/cardView_TemperatureMinMax"
+        android:layout_alignParentStart="true" />
+        </RelativeLayout>
+    </ScrollView>
+
+    <!--<com.craftapps.remotehorticulture.app.widgets.GaugeView
+        android:id="@+id/gaugeView_waterLevel"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        app:showScale="true"
+        android:layout_alignBottom="@+id/verticalSeekBar"
+        android:layout_centerHorizontal="true" />-->
+
+    <!--<WebView
+        android:layout_width="fill_parent"
+        android:layout_height="200dp"
+        android:id="@+id/webViewWater"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true" />-->
 
 
 </RelativeLayout>
