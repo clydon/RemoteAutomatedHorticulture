@@ -1,4 +1,4 @@
-package com.craftapps.remotehorticulture.app.widgets;
+package com.craftapps.remotehorticulture.app.Cards;
 
 import android.content.Context;
 import android.view.View;
@@ -6,19 +6,21 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.craftapps.remotehorticulture.app.R;
+import com.craftapps.remotehorticulture.app.widgets.GaugeView;
+
 import it.gmariotti.cardslib.library.internal.Card;
 
-public class HumidityMinMaxCard extends Card {
+public class WaterDataCard extends Card {
 
-    protected TextView mMinValue;
-    protected TextView mMaxValue;
+    protected TextView mValue;
+    protected GaugeView mGaugeView;
 
     /**
      * Constructor with a custom inner layout
      * @param context
      */
-    public HumidityMinMaxCard(Context context) {
-        this(context, R.layout.card_humidity_minmax);
+    public WaterDataCard(Context context) {
+        this(context, R.layout.card_date);
     }
 
     /**
@@ -26,7 +28,7 @@ public class HumidityMinMaxCard extends Card {
      * @param context
      * @param innerLayout
      */
-    public HumidityMinMaxCard(Context context, int innerLayout) {
+    public WaterDataCard(Context context, int innerLayout) {
         super(context, innerLayout);
         init();
     }
@@ -49,21 +51,22 @@ public class HumidityMinMaxCard extends Card {
     @Override
     public void setupInnerViewElements(ViewGroup parent, View view) {
         //Retrieve elements
-        mMinValue = (TextView) parent.findViewById(R.id.textView_minHumid);
-        mMaxValue = (TextView) parent.findViewById(R.id.textView_maxHumid);
+        mValue = (TextView) parent.findViewById(R.id.textView_waterValue);
+        mGaugeView = (GaugeView) parent.findViewById(R.id.gaugeView);
 
-        if (mMinValue !=null)
-            mMinValue.setText("0.00%");
-        if (mMaxValue !=null)
-            mMaxValue.setText("0.00%");
+        if (mValue !=null)
+            mValue.setText("0.0%");
+        if (mGaugeView !=null)
+            mGaugeView.setTargetValue(0);
 
     }
 
-    public void setValues(Number min, Number max) {
-        if (min != null && max != null) {
-            mMinValue.setText(min.toString() + "%");
-            mMaxValue.setText(max.toString() + "%");
-        }
+    public void setValue(Number value) {
+        if (value != null)
+            mValue.setText(value.toString() + "%");
     }
 
+    public void setGauge(float value) {
+        mGaugeView.setTargetValue(value);
+    }
 }

@@ -4,25 +4,25 @@
     tools:context="com.craftapps.remotehorticulture.app.MainActivity" >
 
     <item android:id="@+id/action_temperature"
-        android:title="Temperature Action"
+        android:title="Temperature Thresholds"
         android:orderInCategory="100"
         android:icon="@drawable/ic_menu_temperature"
         app:showAsAction="withText|ifRoom" />
 
     <item android:id="@+id/action_humidity"
-        android:title="Humidity Action"
+        android:title=""
         android:orderInCategory="100"
         android:icon="@drawable/ic_menu_humidity"
         app:showAsAction="withText|ifRoom" />
 
     <item android:id="@+id/action_lighting"
-        android:title="Lighting Action"
+        android:title="Lighting Schedule"
         android:orderInCategory="100"
         android:icon="@drawable/ic_menu_lighting"
         app:showAsAction="withText|ifRoom" />
 
     <item android:id="@+id/action_water"
-        android:title="Water Action"
+        android:title="Water Schedule"
         android:orderInCategory="100"
         android:icon="@drawable/ic_menu_water"
         app:showAsAction="withText|ifRoom" />

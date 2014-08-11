@@ -1,4 +1,4 @@
-package com.craftapps.remotehorticulture.app.widgets;
+package com.craftapps.remotehorticulture.app.Cards;
 
 import android.content.Context;
 import android.view.View;
@@ -8,7 +8,7 @@ import android.widget.TextView;
 import com.craftapps.remotehorticulture.app.R;
 import it.gmariotti.cardslib.library.internal.Card;
 
-public class TemperatureMinMaxCard extends Card {
+public class HumidityMinMaxCard extends Card {
 
     protected TextView mMinValue;
     protected TextView mMaxValue;
@@ -17,8 +17,8 @@ public class TemperatureMinMaxCard extends Card {
      * Constructor with a custom inner layout
      * @param context
      */
-    public TemperatureMinMaxCard(Context context) {
-        this(context, R.layout.card_temperature_minmax);
+    public HumidityMinMaxCard(Context context) {
+        this(context, R.layout.card_humidity_minmax);
     }
 
     /**
@@ -26,7 +26,7 @@ public class TemperatureMinMaxCard extends Card {
      * @param context
      * @param innerLayout
      */
-    public TemperatureMinMaxCard(Context context, int innerLayout) {
+    public HumidityMinMaxCard(Context context, int innerLayout) {
         super(context, innerLayout);
         init();
     }
@@ -49,20 +49,20 @@ public class TemperatureMinMaxCard extends Card {
     @Override
     public void setupInnerViewElements(ViewGroup parent, View view) {
         //Retrieve elements
-        mMinValue = (TextView) parent.findViewById(R.id.textView_minTemp);
-        mMaxValue = (TextView) parent.findViewById(R.id.textView_maxTemp);
+        mMinValue = (TextView) parent.findViewById(R.id.textView_minHumid);
+        mMaxValue = (TextView) parent.findViewById(R.id.textView_maxHumid);
 
         if (mMinValue !=null)
-            mMinValue.setText("0.0° F");
+            mMinValue.setText("0.00%");
         if (mMaxValue !=null)
-            mMaxValue.setText("0.0° F");
+            mMaxValue.setText("0.00%");
 
     }
 
     public void setValues(Number min, Number max) {
         if (min != null && max != null) {
-            mMinValue.setText(min.toString() + "° F");
-            mMaxValue.setText(max.toString() + "° F");
+            mMinValue.setText(min.toString() + "%");
+            mMaxValue.setText(max.toString() + "%");
         }
     }
 

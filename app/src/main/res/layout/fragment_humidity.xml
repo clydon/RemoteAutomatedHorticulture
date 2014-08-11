@@ -7,7 +7,7 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:id="@+id/textView_Date"
-        android:text="Last Online: "
+        android:text=""
         android:padding="16dp"
         android:typeface="normal"
         android:textSize="16dp" />

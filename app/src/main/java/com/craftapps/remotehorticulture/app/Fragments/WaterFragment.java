@@ -2,32 +2,29 @@ package com.craftapps.remotehorticulture.app.Fragments;
 
 
 import android.app.AlertDialog;
-import android.app.ProgressDialog;
 import android.content.DialogInterface;
-import android.content.res.AssetManager;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.webkit.WebSettings;
-import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.craftapps.remotehorticulture.app.R;
-import com.craftapps.remotehorticulture.app.widgets.DateCard;
 import com.craftapps.remotehorticulture.app.widgets.MultiStateToggleButton;
 import com.craftapps.remotehorticulture.app.widgets.ToggleButton;
-import com.craftapps.remotehorticulture.app.widgets.VerticalSeekBar;
-import com.craftapps.remotehorticulture.app.widgets.WaterDataCard;
-import com.craftapps.remotehorticulture.app.widgets.WebViewCard;
+import com.craftapps.remotehorticulture.app.Cards.WaterDataCard;
+import com.craftapps.remotehorticulture.app.Cards.WaterScheduleCard;
+import com.craftapps.remotehorticulture.app.Cards.WebViewCard;
 import com.parse.FindCallback;
 import com.parse.GetCallback;
 import com.parse.ParseException;
@@ -35,13 +32,9 @@ import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.SaveCallback;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.text.DecimalFormat;
 import java.text.Format;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -55,11 +48,12 @@ import it.gmariotti.cardslib.library.view.CardView;
 
 public class WaterFragment extends Fragment {
 
-    private DateCard cardDate;
     private WaterDataCard cardWaterData;
-    private WebViewCard cardWebView;
-    private ProgressDialog progressDialog;
+    private WaterScheduleCard cardWaterSchedule;
+    private WebViewCard cardCycleWebView;
+    private WebViewCard cardLevelWebView;
 
+    private TextView textViewDate;
     private Button buttonTimeIncrease;
     private Button buttonTimeDecrease;
     private Button buttonDurIncrease;
@@ -69,10 +63,10 @@ public class WaterFragment extends Fragment {
     private TextView textViewTimeHours;
     private MultiStateToggleButton multiToggleWater;
 
-    final List<Double> parseSeries = new ArrayList<Double>();
     private Number currentWater;
     private String currentWaterDate;
 
+    private Date currentDate;
     private int waterDuration;
     private int waterTimePerDay;
     private int toggleValue = 0;
@@ -137,29 +131,34 @@ public class WaterFragment extends Fragment {
 
 
     private void initializeUIElements(View view){
-        cardDate = new DateCard(view.getContext(), R.layout.card_date);
+        textViewDate = (TextView) (view != null ? view.findViewById(R.id.textView_Date) : null);
+
         cardWaterData = new WaterDataCard(view.getContext(), R.layout.card_water_header);
-        cardWebView = new WebViewCard(view.getContext(), R.layout.card_webview);
+        cardWaterSchedule = new WaterScheduleCard(view.getContext(), R.layout.card_water_schedule);
+        cardCycleWebView = new WebViewCard(view.getContext(), R.layout.card_webview);
+        cardLevelWebView = new WebViewCard(view.getContext(), R.layout.card_webview);
 
         CardHeader cardHeader = new CardHeader(view.getContext());
-        cardHeader.setTitle("Last Online");
-        cardDate.addCardHeader(cardHeader);
-        CardView cardViewDate = (CardView) (view != null ? view.findViewById(R.id.cardView_Date) : null);
-        cardViewDate.setCard(cardDate);
-
         cardHeader.setTitle("Current Water Level");
         cardWaterData.addCardHeader(cardHeader);
         CardView cardViewWaterData = (CardView) (view != null ? view.findViewById(R.id.cardView_WaterData) : null);
         cardViewWaterData.setCard(cardWaterData);
 
-        cardHeader.setTitle("Water Cycle");
-        cardWebView.addCardHeader(cardHeader);
-        CardView cardViewWebView = (CardView) (view != null ? view.findViewById(R.id.cardView_WaterWebView) : null);
-        cardViewWebView.setCard(cardWebView);
+        cardHeader.setTitle("Feeding Schedule");
+        cardWaterSchedule.addCardHeader(cardHeader);
+        CardView cardViewWaterSchedule = (CardView) (view != null ? view.findViewById(R.id.cardView_WaterSchedule) : null);
+        cardViewWaterSchedule.setCard(cardWaterSchedule);
 
-        /*CardThumbnail thumb = new CardThumbnail(view.getContext());
-        thumb.setDrawableResource(R.drawable.ic_launcher);
-        cardDate.addCardThumbnail(thumb);*/
+        cardHeader.setTitle("Water Cycle");
+        cardCycleWebView.addCardHeader(cardHeader);
+        CardView cardViewCycleWebView = (CardView) (view != null ? view.findViewById(R.id.cardView_WaterCycleWebView) : null);
+        cardViewCycleWebView.setCard(cardCycleWebView);
+
+        cardHeader.setTitle("Water Level");
+        cardLevelWebView.addCardHeader(cardHeader);
+        CardView cardViewLevelWebView = (CardView) (view != null ? view.findViewById(R.id.cardView_WaterLevelWebView) : null);
+        cardViewLevelWebView.setCard(cardLevelWebView);
+
     }
 
     private void initializeDialogUIElements(View view) {
@@ -274,19 +273,30 @@ public class WaterFragment extends Fragment {
         DecimalFormat df = new DecimalFormat("#.##");
         currentWater = Double.parseDouble(df.format(waterLevelDb));
 
-        Format formatter = new SimpleDateFormat("hh:mm a - EEE MMMM d");
-        currentWaterDate = formatter.format(monitorDataList.get(0).getCreatedAt());
-        Log.i("currentWater", "= " + currentWater);
-        Log.i("currentWaterDate", "= " + currentWaterDate);
+        Format formatter = new SimpleDateFormat("EEE MMMM d - hh:mm a");
+        currentDate = monitorDataList.get(0).getCreatedAt();
+        currentWaterDate = formatter.format(currentDate);
 
         applyValuesToUI();
     }
 
     private void applyValuesToUI() {
-        cardWebView.setWebView("water.html");
+        long THIRTYMINUTES = 30 * 60 * 1000;
+        if(currentDate.getTime() > System.currentTimeMillis() - THIRTYMINUTES) {
+            textViewDate.setBackgroundColor(Color.parseColor("#D2FF57"));
+            textViewDate.setText("Online:   " + currentWaterDate);
+        }
+        else {
+            textViewDate.setBackgroundColor(Color.parseColor("#CC270E"));
+            textViewDate.setText("Last Online:   " + currentWaterDate);
+        }
+
+        cardCycleWebView.setWebView("water.html");
+        cardLevelWebView.setWebView("water_level.html");
         cardWaterData.setValue(currentWater);
         cardWaterData.setGauge(currentWater.floatValue());
-        cardDate.setDate(currentWaterDate);
+        cardWaterSchedule.setDuration(String.valueOf(waterDuration));
+        cardWaterSchedule.setWaterEvery((1440 / waterTimePerDay) / 60 + " hrs " + (1440 / waterTimePerDay) % 60 + " mins");
 
         Log.i("success", ": apply values to UI");
     }
@@ -370,11 +380,8 @@ public class WaterFragment extends Fragment {
 
 
     private void preParseQuery() {
-        progressDialog = new ProgressDialog(getActivity());
-        progressDialog.setTitle("Please Wait..");
-        progressDialog.setMessage("Loading...");
-        progressDialog.setCancelable(false);
-        progressDialog.show();
+        textViewDate.setText("- - - LOADING PLEASE WAIT - - -");
+        textViewDate.setGravity(Gravity.CENTER);
     }
 
     private void parseQuery() {
@@ -427,7 +434,7 @@ public class WaterFragment extends Fragment {
     }
 
     private void postParseQuery() {
-        progressDialog.dismiss();
+        textViewDate.setGravity(Gravity.LEFT);
     }
 
     private void refreshFragment() {

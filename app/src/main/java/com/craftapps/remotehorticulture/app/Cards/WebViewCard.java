@@ -1,4 +1,4 @@
-package com.craftapps.remotehorticulture.app.widgets;
+package com.craftapps.remotehorticulture.app.Cards;
 
 import android.content.Context;
 import android.content.res.AssetManager;

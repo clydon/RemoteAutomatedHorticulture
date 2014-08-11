@@ -2,32 +2,29 @@ package com.craftapps.remotehorticulture.app.Fragments;
 
 
 import android.app.AlertDialog;
-import android.app.ProgressDialog;
 import android.content.DialogInterface;
-import android.content.res.AssetManager;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.webkit.WebView;
 import android.widget.EditText;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.craftapps.remotehorticulture.app.R;
-import com.craftapps.remotehorticulture.app.widgets.DateCard;
-import com.craftapps.remotehorticulture.app.widgets.TemperatureDataCard;
-import com.craftapps.remotehorticulture.app.widgets.TemperatureMinMaxCard;
+import com.craftapps.remotehorticulture.app.Cards.TemperatureDataCard;
+import com.craftapps.remotehorticulture.app.Cards.TemperatureMinMaxCard;
 import com.craftapps.remotehorticulture.app.widgets.VerticalSeekBar;
-import com.craftapps.remotehorticulture.app.widgets.WebViewCard;
+import com.craftapps.remotehorticulture.app.Cards.WebViewCard;
 import com.parse.FindCallback;
 import com.parse.GetCallback;
 import com.parse.ParseException;
@@ -35,9 +32,6 @@ import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.SaveCallback;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -61,10 +55,8 @@ public class TemperatureFragment extends Fragment {
     private TextView textViewDialogCurrentTemp;
     private EditText editTextDialogMinTemp;
     private EditText editTextDialogMaxTemp;
-    private WebView webViewTemp;
 
     final List<Double> parseSeries = new ArrayList<Double>();
-    private ProgressDialog progressDialog;
     private Number currentTemp;
     private Date currentDate;
     private Number minTemp;
@@ -200,7 +192,7 @@ public class TemperatureFragment extends Fragment {
     private void setGlobalValues(List<ParseObject> monitorDataList, List<ParseObject> automationControlList) {
         automationControlId = automationControlList.get(0).getObjectId();
         currentTemp = monitorDataList.get(0).getNumber("fahrenheit");
-        Format formatter = new SimpleDateFormat("hh:mm a - EEE MMMM d");
+        Format formatter = new SimpleDateFormat("EEE MMMM d - hh:mm a");
         currentDate = monitorDataList.get(0).getCreatedAt();
         currentTempDate = formatter.format(currentDate);
         minTemp = automationControlList.get(0).getNumber("TempMin");
@@ -301,16 +293,8 @@ public class TemperatureFragment extends Fragment {
     }
 
     private void preParseQuery() {
-        /*textViewLatestDate.setVisibility(View.INVISIBLE);
-        textViewLatestTemp.setVisibility(View.INVISIBLE);
-        textViewMaxTemp.setVisibility(View.INVISIBLE);
-        textViewMinTemp.setVisibility(View.INVISIBLE);*/
-
-        progressDialog = new ProgressDialog(getActivity());
-        progressDialog.setTitle("Please Wait..");
-        progressDialog.setMessage("Loading...");
-        progressDialog.setCancelable(false);
-        progressDialog.show();
+        textViewDate.setText("- - - LOADING PLEASE WAIT - - -");
+        textViewDate.setGravity(Gravity.CENTER);
     }
 
     private void parseQuery() {
@@ -348,11 +332,7 @@ public class TemperatureFragment extends Fragment {
     }
 
     private void postParseQuery() {
-        /*textViewLatestDate.setVisibility(View.VISIBLE);
-        textViewLatestTemp.setVisibility(View.VISIBLE);
-        textViewMaxTemp.setVisibility(View.VISIBLE);
-        textViewMinTemp.setVisibility(View.VISIBLE);*/
-        progressDialog.dismiss();
+        textViewDate.setGravity(Gravity.LEFT);
     }
 
     private void refreshFragment(){

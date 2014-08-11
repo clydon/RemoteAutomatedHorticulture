@@ -2,17 +2,14 @@ package com.craftapps.remotehorticulture.app.Fragments;
 
 
 import android.app.AlertDialog;
-import android.app.ProgressDialog;
 import android.app.TimePickerDialog;
 import android.content.DialogInterface;
 import android.graphics.Color;
-import android.graphics.LinearGradient;
-import android.graphics.Paint;
-import android.graphics.Shader;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -22,18 +19,13 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
-import android.widget.ToggleButton;
 
-import com.androidplot.Plot;
-import com.androidplot.xy.BoundaryMode;
-import com.androidplot.xy.LineAndPointFormatter;
-import com.androidplot.xy.SimpleXYSeries;
-import com.androidplot.xy.XYPlot;
-import com.androidplot.xy.XYSeries;
-import com.androidplot.xy.XYStepMode;
 import com.craftapps.remotehorticulture.app.R;
+import com.craftapps.remotehorticulture.app.Cards.LightingDataCard;
+import com.craftapps.remotehorticulture.app.Cards.LightingScheduleCard;
 import com.craftapps.remotehorticulture.app.widgets.MultiStateToggleButton;
 import com.craftapps.remotehorticulture.app.widgets.RangeBar;
+import com.craftapps.remotehorticulture.app.Cards.WebViewCard;
 import com.parse.FindCallback;
 import com.parse.GetCallback;
 import com.parse.ParseException;
@@ -41,7 +33,6 @@ import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.SaveCallback;
 
-import java.text.DecimalFormat;
 import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -52,12 +43,16 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import it.gmariotti.cardslib.library.internal.CardHeader;
+import it.gmariotti.cardslib.library.view.CardView;
+
 public class LightingFragment extends Fragment {
 
-    private XYPlot lightingPlot;
-    private TextView textViewLatestLightingDate;
-    private ToggleButton toggleButtonLighting;
-    private ProgressDialog progressDialog;
+    private LightingDataCard cardLightingData;
+    private LightingScheduleCard cardLightingSchedule;
+    private WebViewCard cardWebView;
+
+    private TextView textViewDate;
 
     private RangeBar rangeBarLighting;
     private MultiStateToggleButton multiToggleLighting;
@@ -75,6 +70,7 @@ public class LightingFragment extends Fragment {
     private boolean toggleValue = false;
     private int toggleValueDialog = 0;
     private int overrideState = 0;
+    private Date currentDate;
     private String scheduleId;
     private String onEventId;
     private String offEventId;
@@ -124,7 +120,7 @@ public class LightingFragment extends Fragment {
         switch(item.getItemId()) {
             case R.id.action_lighting:
                 startLightingDialog();
-                Toast.makeText(getActivity(), "Lighting action.", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(getActivity(), "Lighting action.", Toast.LENGTH_SHORT).show();
                 return true;
             case R.id.action_refresh:
                 refreshFragment();
@@ -137,9 +133,27 @@ public class LightingFragment extends Fragment {
 
 
     private void initializeUIElements(View view){
-        lightingPlot = (XYPlot) (view != null ? view.findViewById(R.id.lightingPlot) : null);
-        toggleButtonLighting = (ToggleButton) (view != null ? view.findViewById(R.id.toggleButtonLighting) : null);
-        textViewLatestLightingDate = (TextView) (view != null ? view.findViewById(R.id.textView_latestLightingDate) : null);
+        textViewDate = (TextView) (view != null ? view.findViewById(R.id.textView_Date) : null);
+
+        cardLightingData = new LightingDataCard(view.getContext(), R.layout.card_lighting_header);
+        cardLightingSchedule = new LightingScheduleCard(view.getContext(), R.layout.card_lighting_schedule);
+        cardWebView = new WebViewCard(view.getContext(), R.layout.card_webview);
+
+        CardHeader cardHeader = new CardHeader(view.getContext());
+        cardHeader.setTitle("Current Lighting");
+        cardLightingData.addCardHeader(cardHeader);
+        CardView cardViewLightingData = (CardView) (view != null ? view.findViewById(R.id.cardView_LightingData) : null);
+        cardViewLightingData.setCard(cardLightingData);
+
+        cardHeader.setTitle("Lighting Schedule");
+        cardLightingSchedule.addCardHeader(cardHeader);
+        CardView cardViewLightingSchedule = (CardView) (view != null ? view.findViewById(R.id.cardView_LightingSchedule) : null);
+        cardViewLightingSchedule.setCard(cardLightingSchedule);
+
+        cardHeader.setTitle("Light Hours");
+        cardWebView.addCardHeader(cardHeader);
+        CardView cardViewWebView = (CardView) (view != null ? view.findViewById(R.id.cardView_LightingWebView) : null);
+        cardViewWebView.setCard(cardWebView);
     }
 
     private void initializeDialogUIElements(View view) {
@@ -308,8 +322,9 @@ public class LightingFragment extends Fragment {
         lightingDuration = Math.abs(lightingTimeOff - lightingTimeOn);
 
         currentLighting = monitorDataList.get(0).getInt("LDR");
-        Format formatter = new SimpleDateFormat("hh:mm a - EEE MMMM d");
-        currentLightingDate = formatter.format(monitorDataList.get(0).getCreatedAt());
+        Format formatter = new SimpleDateFormat("EEE MMMM d - hh:mm a");
+        currentDate = monitorDataList.get(0).getCreatedAt();
+        currentLightingDate = formatter.format(currentDate);
 
         int automationState = automationStatusList.get(0).getNumber("State").intValue();
         if(automationState>0)
@@ -335,11 +350,21 @@ public class LightingFragment extends Fragment {
     }
 
     private void applyValuesToUI() {
-        setupGraph();
+        long THIRTYMINUTES = 30 * 60 * 1000;
+        if(currentDate.getTime() > System.currentTimeMillis() - THIRTYMINUTES) {
+            textViewDate.setBackgroundColor(Color.parseColor("#D2FF57"));
+            textViewDate.setText("Online:   " + currentLightingDate);
+        }
+        else {
+            textViewDate.setBackgroundColor(Color.parseColor("#CC270E"));
+            textViewDate.setText("Last Online:   " + currentLightingDate);
+        }
 
-        toggleButtonLighting.setChecked(toggleValue);
+        cardLightingData.setToggleValue(toggleValue);
+        cardLightingData.setScheduleValue(overrideState);
+        cardLightingSchedule.setTime(minutesToTimeString(lightingTimeOn), minutesToTimeString(lightingTimeOff));
+        cardWebView.setWebView("lighting.html");
 
-        textViewLatestLightingDate.setText(currentLightingDate);
         Log.i("success", ": apply values to UI");
     }
 
@@ -459,66 +484,9 @@ public class LightingFragment extends Fragment {
         return hourString + ":" + minuteString + " " + AMPM;
     }
 
-    private void setupGraph() {
-        List<Double> pSeries = new ArrayList<Double>();
-
-        for(int i=0; i<50; i++){
-            int j = (int)(Math.random() * ((1) + 1));
-            if (j==0) pSeries.add((double) 0);
-            else pSeries.add((double) 100);
-        }
-
-        XYSeries series3 = new SimpleXYSeries(pSeries, SimpleXYSeries.ArrayFormat.Y_VALS_ONLY, "ParseSeries");
-
-        //lightingPlot.getGraphWidget().getGridBackgroundPaint().setColor(Color.WHITE);
-        lightingPlot.getGraphWidget().getDomainOriginLinePaint().setColor(Color.WHITE);
-        lightingPlot.getGraphWidget().getRangeOriginLinePaint().setColor(Color.WHITE);
-
-        lightingPlot.setBorderStyle(Plot.BorderStyle.SQUARE, null, null);
-        lightingPlot.getBorderPaint().setStrokeWidth(1);
-        lightingPlot.getBorderPaint().setAntiAlias(false);
-        lightingPlot.getBorderPaint().setColor(Color.WHITE);
-
-        // setup our line fill paint to be a slightly transparent gradient:
-        Paint lineFill = new Paint();
-        lineFill.setAlpha(200);
-        lineFill.setShader(new LinearGradient(0, 0, 0, 250, Color.BLUE, Color.RED, Shader.TileMode.MIRROR));
-
-        LineAndPointFormatter formatter  = new LineAndPointFormatter(Color.rgb(0, 0,0), Color.BLUE, Color.RED, null);
-        formatter.setFillPaint(lineFill);
-        lightingPlot.getGraphWidget().setPaddingRight(2);
-        lightingPlot.addSeries(series3, formatter);
-
-        // customize our domain/range labels
-        lightingPlot.setDomainLabel("Interval");
-        lightingPlot.setRangeLabel("Lighting Level (%)");
-        lightingPlot.getLegendWidget().setVisible(false);
-
-        // get rid of decimal points in our range labels:
-        lightingPlot.setRangeValueFormat(new DecimalFormat("0"));
-        lightingPlot.setDomainValueFormat(new DecimalFormat("0"));
-
-        lightingPlot.getGraphWidget().setGridBackgroundPaint(null);
-
-        lightingPlot.setRangeStep(XYStepMode.INCREMENT_BY_VAL, 20);
-        lightingPlot.setDomainStep(XYStepMode.INCREMENT_BY_VAL, 1);
-        lightingPlot.setTicksPerDomainLabel(5);
-        lightingPlot.setRangeBoundaries(0, 100, BoundaryMode.FIXED);
-
-        lightingPlot.redraw();
-        Log.i("success", ": setupGraph/redraw");
-    }
-
     private void preParseQuery() {
-        lightingPlot.setVisibility(View.INVISIBLE);
-        textViewLatestLightingDate.setVisibility(View.INVISIBLE);
-        toggleButtonLighting.setVisibility(View.INVISIBLE);
-
-        progressDialog = new ProgressDialog(getActivity());
-        progressDialog.setTitle("Please Wait..");
-        progressDialog.setMessage("Loading...");
-        progressDialog.setCancelable(false);
-        progressDialog.show();
+        textViewDate.setText("- - - LOADING PLEASE WAIT - - -");
+        textViewDate.setGravity(Gravity.CENTER);
     }
 
     private void parseQuery() {
@@ -577,11 +545,7 @@ public class LightingFragment extends Fragment {
     }
 
     private void postParseQuery() {
-        progressDialog.dismiss();
-
-        lightingPlot.setVisibility(View.VISIBLE);
-        textViewLatestLightingDate.setVisibility(View.VISIBLE);
-        toggleButtonLighting.setVisibility(View.VISIBLE);
+        textViewDate.setGravity(Gravity.LEFT);
     }
 
     private void refreshFragment() {

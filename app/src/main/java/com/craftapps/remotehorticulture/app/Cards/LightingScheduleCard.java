@@ -1,4 +1,4 @@
-package com.craftapps.remotehorticulture.app.widgets;
+package com.craftapps.remotehorticulture.app.Cards;
 
 import android.content.Context;
 import android.view.View;
@@ -8,16 +8,17 @@ import android.widget.TextView;
 import com.craftapps.remotehorticulture.app.R;
 import it.gmariotti.cardslib.library.internal.Card;
 
-public class DateCard extends Card {
+public class LightingScheduleCard extends Card {
 
-    protected TextView mDate;
+    protected TextView mLightsOff;
+    protected TextView mLightsOn;
 
     /**
      * Constructor with a custom inner layout
      * @param context
      */
-    public DateCard(Context context) {
-        this(context, R.layout.card_date);
+    public LightingScheduleCard(Context context) {
+        this(context, R.layout.card_lighting_schedule);
     }
 
     /**
@@ -25,7 +26,7 @@ public class DateCard extends Card {
      * @param context
      * @param innerLayout
      */
-    public DateCard(Context context, int innerLayout) {
+    public LightingScheduleCard(Context context, int innerLayout) {
         super(context, innerLayout);
         init();
     }
@@ -48,15 +49,21 @@ public class DateCard extends Card {
     @Override
     public void setupInnerViewElements(ViewGroup parent, View view) {
         //Retrieve elements
-        mDate = (TextView) parent.findViewById(R.id.textView_Date);
+        mLightsOff = (TextView) parent.findViewById(R.id.textView_lightsOff);
+        mLightsOn = (TextView) parent.findViewById(R.id.textView_lightsOn);
 
-        if (mDate !=null)
-            mDate.setText("00:00 AM");
+        if (mLightsOn !=null)
+            mLightsOn.setText("00:00 AM");
+        if (mLightsOff !=null)
+            mLightsOff.setText("00:00 PM");
 
     }
 
-    public void setDate(String date) {
-        if (date != null)
-            mDate.setText(date);
+    public void setTime(String lightsOn, String lightsOff) {
+        if (lightsOn != null && lightsOff != null) {
+            mLightsOff.setText(lightsOff);
+            mLightsOn.setText(lightsOn);
+        }
     }
+
 }

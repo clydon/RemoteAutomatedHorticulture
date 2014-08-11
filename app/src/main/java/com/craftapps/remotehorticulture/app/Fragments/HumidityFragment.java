@@ -2,39 +2,30 @@ package com.craftapps.remotehorticulture.app.Fragments;
 
 
 import android.app.ProgressDialog;
-import android.content.res.AssetManager;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.webkit.WebSettings;
-import android.webkit.WebView;
-import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.craftapps.remotehorticulture.app.R;
-import com.craftapps.remotehorticulture.app.widgets.HumidityDataCard;
-import com.craftapps.remotehorticulture.app.widgets.HumidityMinMaxCard;
-import com.craftapps.remotehorticulture.app.widgets.TemperatureDataCard;
-import com.craftapps.remotehorticulture.app.widgets.TemperatureMinMaxCard;
-import com.craftapps.remotehorticulture.app.widgets.VerticalSeekBar;
-import com.craftapps.remotehorticulture.app.widgets.WebViewCard;
+import com.craftapps.remotehorticulture.app.Cards.HumidityDataCard;
+import com.craftapps.remotehorticulture.app.Cards.HumidityMinMaxCard;
+import com.craftapps.remotehorticulture.app.Cards.WebViewCard;
 import com.parse.FindCallback;
 import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -52,8 +43,6 @@ public class HumidityFragment extends Fragment {
     private WebViewCard cardWebView;
 
     private TextView textViewDate;
-
-    private ProgressDialog progressDialog;
     private Date currentDate;
     private Number currentHumid;
     private Number minHumid;
@@ -103,7 +92,7 @@ public class HumidityFragment extends Fragment {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch(item.getItemId()) {
             case R.id.action_humidity:
-                Toast.makeText(getActivity(), "Humidity action.", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(getActivity(), "Humidity action.", Toast.LENGTH_SHORT).show();
                 return true;
             case R.id.action_refresh:
                 refreshFragment();
@@ -141,7 +130,7 @@ public class HumidityFragment extends Fragment {
     private void setGlobalValues(List<ParseObject> humidList) {
         currentHumid = humidList.get(0).getNumber("humidity");
         currentDate = humidList.get(0).getCreatedAt();
-        Format formatter = new SimpleDateFormat("hh:mm a - EEE MMMM d");
+        Format formatter = new SimpleDateFormat("EEE MMMM d - hh:mm a");
         currentHumidDate = formatter.format(currentDate);
 
         double high = humidList.get(0).getNumber("humidity").doubleValue();
@@ -183,16 +172,8 @@ public class HumidityFragment extends Fragment {
     }
 
     private void preParseQuery() {
-        /*textViewLatestDate.setVisibility(View.INVISIBLE);
-        textViewLatestHumid.setVisibility(View.INVISIBLE);
-        textViewMaxHumid.setVisibility(View.INVISIBLE);
-        textViewMinHumid.setVisibility(View.INVISIBLE);*/
-
-        progressDialog = new ProgressDialog(getActivity());
-        progressDialog.setTitle("Please Wait..");
-        progressDialog.setMessage("Loading...");
-        progressDialog.setCancelable(false);
-        progressDialog.show();
+        textViewDate.setText("- - - LOADING PLEASE WAIT - - -");
+        textViewDate.setGravity(Gravity.CENTER);
     }
 
     private void parseQuery() {
@@ -222,11 +203,7 @@ public class HumidityFragment extends Fragment {
     }
 
     private void postParseQuery() {
-        /*textViewLatestDate.setVisibility(View.VISIBLE);
-        textViewLatestHumid.setVisibility(View.VISIBLE);
-        textViewMaxHumid.setVisibility(View.VISIBLE);
-        textViewMinHumid.setVisibility(View.VISIBLE);*/
-        progressDialog.dismiss();
+        textViewDate.setGravity(Gravity.LEFT);
     }
 
     private void refreshFragment() {

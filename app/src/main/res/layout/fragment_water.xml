@@ -6,41 +6,54 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <it.gmariotti.cardslib.library.view.CardView
-        android:id="@+id/cardView_Date"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentStart="true" />
-
-    <it.gmariotti.cardslib.library.view.CardView
-        android:id="@+id/cardView_WaterData"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/cardView_Date"
-        android:layout_alignParentStart="true" />
-
-    <it.gmariotti.cardslib.library.view.CardView
-        android:id="@+id/cardView_WaterWebView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@+id/cardView_WaterData"
-        android:layout_alignParentStart="true" />
-
-    <!--<com.craftapps.remotehorticulture.app.widgets.GaugeView
-        android:id="@+id/gaugeView_waterLevel"
-        android:layout_width="150dp"
-        android:layout_height="150dp"
-        app:showScale="true"
-        android:layout_alignBottom="@+id/verticalSeekBar"
-        android:layout_centerHorizontal="true" />-->
-
-    <!--<WebView
+    <TextView
         android:layout_width="fill_parent"
-        android:layout_height="200dp"
-        android:id="@+id/webViewWater"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentStart="true" />-->
+        android:layout_height="wrap_content"
+        android:id="@+id/textView_Date"
+        android:text=""
+        android:padding="16dp"
+        android:typeface="normal"
+        android:textSize="16dp" />
+    <ScrollView
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:id="@+id/scrollView"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/textView_Date">
 
+        <RelativeLayout
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent">
+
+            <it.gmariotti.cardslib.library.view.CardView
+                android:id="@+id/cardView_WaterData"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentStart="true" />
+
+            <it.gmariotti.cardslib.library.view.CardView
+                android:id="@+id/cardView_WaterSchedule"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/cardView_WaterData"
+                android:layout_alignParentStart="true" />
+
+            <it.gmariotti.cardslib.library.view.CardView
+                android:id="@+id/cardView_WaterCycleWebView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_below="@+id/cardView_WaterSchedule"
+                android:layout_alignParentStart="true" />
+
+            <it.gmariotti.cardslib.library.view.CardView
+                android:id="@+id/cardView_WaterLevelWebView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_below="@+id/cardView_WaterCycleWebView"
+                android:layout_alignParentStart="true" />
+
+            </RelativeLayout>
+    </ScrollView>
 
 </RelativeLayout>

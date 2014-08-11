@@ -1,4 +1,4 @@
-package com.craftapps.remotehorticulture.app.widgets;
+package com.craftapps.remotehorticulture.app.Cards;
 
 import android.content.Context;
 import android.view.View;
@@ -7,6 +7,8 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.craftapps.remotehorticulture.app.R;
+import com.craftapps.remotehorticulture.app.widgets.VerticalSeekBar;
+
 import it.gmariotti.cardslib.library.internal.Card;
 
 public class TemperatureDataCard extends Card {

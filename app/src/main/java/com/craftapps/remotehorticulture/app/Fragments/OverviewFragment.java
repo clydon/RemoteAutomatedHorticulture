@@ -1,22 +1,23 @@
 package com.craftapps.remotehorticulture.app.Fragments;
 
-import android.app.ProgressDialog;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.ToggleButton;
 
+import com.craftapps.remotehorticulture.app.Cards.OverviewDataCard;
+import com.craftapps.remotehorticulture.app.Cards.OverviewWaterLightCard;
+import com.craftapps.remotehorticulture.app.Cards.WebViewCard;
 import com.craftapps.remotehorticulture.app.R;
-import com.craftapps.remotehorticulture.app.widgets.VerticalSeekBar;
 import com.parse.FindCallback;
 import com.parse.ParseException;
 import com.parse.ParseObject;
@@ -24,32 +25,33 @@ import com.parse.ParseQuery;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.text.DecimalFormat;
 import java.text.Format;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.TimeUnit;
+
+import it.gmariotti.cardslib.library.internal.CardHeader;
+import it.gmariotti.cardslib.library.view.CardView;
 
 public class OverviewFragment extends Fragment {
 
-    private ProgressDialog progressDialog;
-
-    private VerticalSeekBar seekBarTemp;
-    private VerticalSeekBar seekBarHumid;
-    private TextView textViewTemp;
-    private TextView textViewHumid;
+    private OverviewDataCard cardOverviewData;
+    private OverviewWaterLightCard cardOverviewWaterLight;
+    private WebViewCard cardWebView;
     private TextView textViewDate;
-    private TextView textViewLightHoursOn;
-    private TextView textViewLightHoursOff;
-    private TextView textViewWaterCycleEvery;
-    private TextView textViewWaterCycleDur;
-    private ToggleButton toggleButtonLight;
 
+    private boolean toggleValue;
     private Number currentTemp;
     private Number currentHumid;
-    private String currentDate;
+    private Number currentWater;
+    private Date currentDate;
+    private String currentOverviewDate;
+    private int scheduleOverrideState;
     private boolean currentLight;
     private double lightsOnTime;
     private double lightsOffTime;
@@ -109,40 +111,43 @@ public class OverviewFragment extends Fragment {
     }
 
     private void initializeUIElements(View view){
-        seekBarTemp = (VerticalSeekBar) (view != null ? view.findViewById(R.id.seekBarTemperature) : null);
-        seekBarHumid = (VerticalSeekBar) (view != null ? view.findViewById(R.id.seekBarHumidity) : null);
-        textViewTemp = (TextView) (view != null ? view.findViewById(R.id.textViewOverviewTemp) : null);
-        textViewHumid = (TextView) (view != null ? view.findViewById(R.id.textViewOverviewHumid) : null);
-        textViewDate = (TextView) (view != null ? view.findViewById(R.id.textViewDate) : null);
-        textViewLightHoursOn = (TextView) (view != null ? view.findViewById(R.id.textViewLightHours) : null);
-        textViewLightHoursOff = (TextView) (view != null ? view.findViewById(R.id.textViewDarkHours) : null);
-        textViewWaterCycleEvery = (TextView) (view != null ? view.findViewById(R.id.textViewWateringCycle) : null);
-        textViewWaterCycleDur = (TextView) (view != null ? view.findViewById(R.id.textViewWateringDuration) : null);
-        toggleButtonLight = (ToggleButton) (view != null ? view.findViewById(R.id.toggleButtonOverviewLighting) : null);
+        textViewDate = (TextView) (view != null ? view.findViewById(R.id.textView_Date) : null);
+
+        cardOverviewData = new OverviewDataCard(view.getContext(), R.layout.card_overview_header);
+        cardOverviewWaterLight = new OverviewWaterLightCard(view.getContext(), R.layout.card_overview_waterlight);
+        cardWebView = new WebViewCard(view.getContext(), R.layout.card_webview);
+
+        CardHeader cardHeader = new CardHeader(view.getContext());
+        cardOverviewData.addCardHeader(cardHeader);
+        CardView cardViewOverviewData = (CardView) (view != null ? view.findViewById(R.id.cardView_OverviewData) : null);
+        cardViewOverviewData.setCard(cardOverviewData);
+
+        cardOverviewWaterLight.addCardHeader(cardHeader);
+        CardView cardViewOverviewWaterLight = (CardView) (view != null ? view.findViewById(R.id.cardView_OverviewWaterLight) : null);
+        cardViewOverviewWaterLight.setCard(cardOverviewWaterLight);
+
+        cardHeader.setTitle("Trends");
+        cardWebView.addCardHeader(cardHeader);
+        CardView cardViewWebView = (CardView) (view != null ? view.findViewById(R.id.cardView_OverviewWebView) : null);
+        cardViewWebView.setCard(cardWebView);
     }
 
     private void setGlobalValues(List<ParseObject> monitorDataList,
                                  List<ParseObject> lightEventList, Number lightOverrideState,
-                                 List<ParseObject> waterEventList, Number waterOverrideState) {
+                                 List<ParseObject> waterEventList, Number waterOverrideState, List<ParseObject> automationStatusList) {
 
         Format formatter = new SimpleDateFormat("hh:mm a - EEE MMMM d");
-        currentDate = formatter.format(monitorDataList.get(0).getCreatedAt());
+        currentDate = monitorDataList.get(0).getCreatedAt();
+        currentOverviewDate = formatter.format(currentDate);
 
         currentTemp = monitorDataList.get(0).getNumber("fahrenheit");
         currentHumid = monitorDataList.get(0).getNumber("humidity");
+        Number waterLevel = monitorDataList.get(0).getNumber("waterLevel");
+        double waterLevelDb = (Double.parseDouble(waterLevel.toString())/700.0) * 100.0;
+        DecimalFormat df = new DecimalFormat("#.##");
+        currentWater = Double.parseDouble(df.format(waterLevelDb));
 
-        switch (lightOverrideState.intValue()){
-            case 0: // Auto
-                int LDR = monitorDataList.get(0).getNumber("LDR").intValue();
-                currentLight = LDR >= 100;
-                break;
-            case 1: // On
-                currentLight = true;
-                break;
-            case 2: // Off
-                currentLight = false;
-                break;
-        }
+        scheduleOverrideState = lightOverrideState.intValue();
 
         Date lightsOnDate = lightEventList.get(1).getDate("FirstOccurrence");
         Date lightsOffDate = lightEventList.get(0).getDate("FirstOccurrence");
@@ -161,53 +166,52 @@ public class OverviewFragment extends Fragment {
         bd = new BigDecimal(waterInterval);
         waterHourInterval = bd.setScale(1, RoundingMode.HALF_UP).doubleValue();
 
+        int automationState = automationStatusList.get(0).getNumber("State").intValue();
+        if(automationState>0)
+            toggleValue = (automationState != 2);
+        else{
+            Date nowDate = new Date();
+
+            Calendar start = new GregorianCalendar();
+            start.setTimeInMillis(lightsOnDate.getTime());
+            start.set(Calendar.DAY_OF_YEAR,0);
+
+            Calendar end = new GregorianCalendar();
+            end.setTimeInMillis(lightsOffDate.getTime());
+            end.set(Calendar.DAY_OF_YEAR,0);
+
+            Calendar now = new GregorianCalendar();
+            now.setTimeInMillis(nowDate.getTime());
+            now.set(Calendar.DAY_OF_YEAR,0);
+
+            toggleValue = (now.after(start) && now.before(end));
+        }
+
         applyValuesToUI();
     }
 
     private void applyValuesToUI() {
-        textViewDate.setText(currentDate);
-        toggleButtonLight.setChecked(currentLight);
+        long THIRTYMINUTES = 30 * 60 * 1000;
+        if(currentDate.getTime() > System.currentTimeMillis() - THIRTYMINUTES) {
+            textViewDate.setBackgroundColor(Color.parseColor("#D2FF57"));
+            textViewDate.setText("Online:   " + currentOverviewDate);
+        }
+        else {
+            textViewDate.setBackgroundColor(Color.parseColor("#CC270E"));
+            textViewDate.setText("Last Online:   " + currentOverviewDate);
+        }
 
-        textViewTemp.setText(currentTemp.toString() + "° F");
-        seekBarTemp.setProgress(currentTemp.intValue());
-        seekBarTemp.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int i, boolean b) { seekBar.setProgress(currentTemp.intValue()); }
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) { seekBar.setProgress(currentTemp.intValue()); }
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) { seekBar.setProgress(currentTemp.intValue()); }
-        });
+        cardOverviewData.setTemp(currentTemp);
+        cardOverviewData.setHumid(currentHumid);
 
-        textViewHumid.setText(currentHumid.toString() + "%");
-        seekBarHumid.setProgress(currentHumid.intValue());
-        seekBarHumid.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int i, boolean b) { seekBar.setProgress(currentHumid.intValue()); }
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) { seekBar.setProgress(currentHumid.intValue()); }
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) { seekBar.setProgress(currentHumid.intValue()); }
-        });
-
-        textViewLightHoursOn.setText(String.valueOf(lightsOnTime) + " hrs");
-        textViewLightHoursOff.setText(String.valueOf(lightsOffTime) + " hrs");
-
-        textViewWaterCycleEvery.setText(String.valueOf(waterHourInterval) + " hrs");
-        textViewWaterCycleDur.setText(String.valueOf(waterDuration) + " mins");
+        cardOverviewWaterLight.setWater(currentWater.floatValue());
+        cardOverviewWaterLight.setLighting(toggleValue, scheduleOverrideState);
+        cardWebView.setWebView("water_lighting.html");
     }
 
     private void preParseQuery() {
-        /*textViewLatestDate.setVisibility(View.INVISIBLE);
-        textViewLatestTemp.setVisibility(View.INVISIBLE);
-        textViewMaxTemp.setVisibility(View.INVISIBLE);
-        textViewMinTemp.setVisibility(View.INVISIBLE);*/
-
-        progressDialog = new ProgressDialog(getActivity());
-        progressDialog.setTitle("Please Wait..");
-        progressDialog.setMessage("Loading...");
-        progressDialog.setCancelable(false);
-        progressDialog.show();
+        textViewDate.setText("- - - LOADING PLEASE WAIT - - -");
+        textViewDate.setGravity(Gravity.CENTER);
     }
 
     private void parseQuery() {
@@ -273,7 +277,43 @@ public class OverviewFragment extends Fragment {
                     waterEventQuery.findInBackground(new FindCallback<ParseObject>() {
                         public void done(final List<ParseObject> waterEventList, ParseException e) {
                             if (e == null) {
-                                setGlobalValues(monitorDataList, lightEventList,lightOverrideState, waterEventList, waterOverrideState);
+                                automationStateQuery(monitorDataList, lightEventList, lightOverrideState, waterEventList, waterOverrideState);
+                                postParseQuery();
+                            }
+                        }
+                    });
+                }
+            }
+        });
+    }
+
+    private void automationStateQuery(final List<ParseObject> monitorDataList, final List<ParseObject> lightEventList, final Number lightOverrideState, final List<ParseObject> waterEventList, final Number waterOverrideState) {
+        ParseQuery<ParseObject> automationStatusQuery = ParseQuery.getQuery("AutomationState");
+        automationStatusQuery.whereEqualTo("Type", "Light");
+        automationStatusQuery.orderByDescending("createdAt");
+        automationStatusQuery.findInBackground(new FindCallback<ParseObject>() {
+            @Override
+            public void done(List<ParseObject> automationStatusList, ParseException e) {
+                setGlobalValues(monitorDataList, lightEventList,lightOverrideState, waterEventList, waterOverrideState, automationStatusList);
+                postParseQuery();
+            }
+        });
+
+        ParseQuery<ParseObject> waterScheduleQuery = ParseQuery.getQuery("Schedule");
+        waterScheduleQuery.whereEqualTo("Name", "Pump");
+
+        waterScheduleQuery.findInBackground(new FindCallback<ParseObject>() {
+            public void done(final List<ParseObject> waterScheduleList, ParseException e) {
+                if (e == null) {
+                    String waterScheduleId = waterScheduleList.get(0).getObjectId();
+                    final Number waterOverrideState = waterScheduleList.get(0).getNumber("OverrideState");
+                    ParseQuery<ParseObject> waterEventQuery = ParseQuery.getQuery("Event");
+                    waterEventQuery.whereEqualTo("ScheduleId", waterScheduleId);
+
+                    waterEventQuery.findInBackground(new FindCallback<ParseObject>() {
+                        public void done(final List<ParseObject> waterEventList, ParseException e) {
+                            if (e == null) {
+
                                 postParseQuery();
                             }
                         }
@@ -284,11 +324,7 @@ public class OverviewFragment extends Fragment {
     }
 
     private void postParseQuery() {
-        /*textViewLatestDate.setVisibility(View.VISIBLE);
-        textViewLatestTemp.setVisibility(View.VISIBLE);
-        textViewMaxTemp.setVisibility(View.VISIBLE);
-        textViewMinTemp.setVisibility(View.VISIBLE);*/
-        progressDialog.dismiss();
+        textViewDate.setGravity(Gravity.LEFT);
     }
 
     private void refreshFragment(){

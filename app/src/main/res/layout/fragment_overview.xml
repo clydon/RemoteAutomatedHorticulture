@@ -1,272 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:card="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <com.craftapps.remotehorticulture.app.widgets.VerticalSeekBar
-        android:layout_width="25dp"
-        android:layout_height="200dp"
-        android:max="120"
-        android:id="@+id/seekBarTemperature"
-        android:progress="0"
-        android:thumb="@android:color/transparent"
-        android:indeterminate="false"
-        android:layout_below="@+id/textView"
-        android:layout_alignParentStart="true" />
-
-    <com.craftapps.remotehorticulture.app.widgets.VerticalSeekBar
-        android:layout_width="25dp"
-        android:layout_height="200dp"
-        android:max="100"
-        android:id="@+id/seekBarHumidity"
-        android:progress="0"
-        android:thumb="@android:color/transparent"
-        android:indeterminate="false"
-        android:layout_below="@+id/textView"
-        android:layout_alignParentEnd="true" />
-
     <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="50dp"
-        android:textAppearance="?android:attr/textAppearanceSmall"
-        android:text="00:00 AM"
-        android:id="@+id/textViewDate"
-        android:gravity="center"
-        android:typeface="serif"
-        android:layout_alignTop="@+id/seekBarTemperature"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentEnd="true" />
-
-    <ToggleButton
-        android:layout_width="100dp"
-        android:layout_height="100dp"
-        android:background="@drawable/custom_switch"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/textView_Date"
         android:text=""
-        android:id="@+id/toggleButtonOverviewLighting"
-        android:textOn=""
-        android:textOff=""
-        android:paddingTop="50dp"
-        android:layout_alignBottom="@+id/tempHumidLayout"
-        android:layout_centerHorizontal="true" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="Grow Light Cycle:"
-        android:id="@+id/textView1"
-        android:layout_below="@+id/tempHumidLayout"
-        android:layout_alignParentStart="true"
-        android:textStyle="bold"
-        android:paddingLeft="16dp"
-        android:paddingTop="16dp"
-        android:paddingRight="16dp" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="Watering Cycle:"
-        android:id="@+id/textView3"
-        android:textStyle="bold"
-        android:layout_below="@+id/lightingLayout"
-        android:layout_alignParentStart="true"
-        android:paddingLeft="16dp"
-        android:paddingTop="16dp"
-        android:paddingRight="16dp" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="Control Hub Overview"
-        android:id="@+id/textView"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentStart="true"
-        android:gravity="center"
-        android:padding="5dp"
-        android:textStyle="bold" />
-
-    <LinearLayout
-        android:orientation="horizontal"
+        android:padding="16dp"
+        android:typeface="normal"
+        android:textSize="16dp" />
+    <ScrollView
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/textView3"
+        android:layout_height="fill_parent"
+        android:id="@+id/scrollView"
         android:layout_alignParentStart="true"
-        android:id="@+id/wateringLayout"
-        android:weightSum="16">
+        android:layout_below="@+id/textView_Date">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:text="Every:"
-            android:id="@+id/textView7"
-            android:paddingLeft="16dp"
-            android:paddingRight="3dp"
-            android:paddingBottom="16dp"
-            android:layout_below="@+id/textView3"
-            android:layout_alignParentStart="true"
-            android:paddingTop="16dp"
-            android:layout_weight="1" />
+        <RelativeLayout
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:text="00 hrs"
-            android:id="@+id/textViewWateringCycle"
-            android:paddingBottom="16dp"
-            android:textSize="20dp"
-            android:typeface="serif"
-            android:paddingTop="13dp"
-            android:layout_alignTop="@+id/textView7"
-            android:layout_toRightOf="@+id/textView7"
-            android:layout_weight="7" />
+            <it.gmariotti.cardslib.library.view.CardView
+                android:id="@+id/cardView_OverviewData"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:text="Duration"
-            android:id="@+id/textView9"
-            android:paddingLeft="16dp"
-            android:paddingRight="3dp"
-            android:paddingBottom="16dp"
-            android:paddingTop="16dp"
-            android:layout_below="@+id/textView3"
-            android:layout_toRightOf="@+id/textViewOverviewTemp"
-            android:layout_weight="1" />
+            <it.gmariotti.cardslib.library.view.CardView
+                android:id="@+id/cardView_OverviewWaterLight"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/cardView_OverviewData"
+                android:layout_alignParentStart="true" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:text="00 mins"
-            android:id="@+id/textViewWateringDuration"
-            android:paddingBottom="16dp"
-            android:textSize="20dp"
-            android:typeface="serif"
-            android:paddingTop="13dp"
-            android:layout_alignTop="@+id/textView9"
-            android:layout_toRightOf="@+id/textView9"
-            android:layout_weight="7"
-            android:paddingRight="16dp" />
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:orientation="horizontal"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/textView1"
-        android:layout_alignParentStart="true"
-        android:id="@+id/lightingLayout"
-        android:weightSum="16">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:text="Dark:"
-            android:id="@+id/textView2"
-            android:paddingLeft="16dp"
-            android:paddingRight="3dp"
-            android:paddingBottom="16dp"
-            android:paddingTop="16dp"
-            android:layout_below="@+id/textView1"
-            android:layout_toLeftOf="@+id/textViewWateringDuration"
-            android:layout_weight="1" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:text="00 hrs"
-            android:id="@+id/textViewLightHours"
-            android:paddingBottom="16dp"
-            android:typeface="serif"
-            android:textSize="20dp"
-            android:paddingTop="13dp"
-            android:layout_below="@+id/textView1"
-            android:layout_toRightOf="@+id/textView7"
-            android:layout_weight="7" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:text="Light:"
-            android:id="@+id/textView4"
-            android:paddingLeft="8dp"
-            android:paddingRight="3dp"
-            android:layout_below="@+id/textView1"
-            android:layout_alignParentStart="true"
-            android:paddingBottom="16dp"
-            android:paddingTop="16dp"
-            android:layout_weight="1" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:text="00 hrs"
-            android:id="@+id/textViewDarkHours"
-            android:paddingBottom="16dp"
-            android:typeface="serif"
-            android:textSize="20dp"
-            android:paddingTop="13dp"
-            android:layout_alignTop="@+id/textView2"
-            android:layout_toRightOf="@+id/textView2"
-            android:layout_weight="7"
-            android:paddingRight="16dp" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:orientation="horizontal"
-        android:layout_width="fill_parent"
-        android:layout_height="200dp"
-        android:layout_below="@+id/textView"
-        android:layout_alignParentStart="true"
-        android:id="@+id/tempHumidLayout"
-        android:weightSum="2">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="200dp"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:text="000° F"
-            android:id="@+id/textViewOverviewTemp"
-            android:gravity="center"
-            android:textSize="45dp"
-            android:typeface="serif"
-            android:paddingLeft="16dp"
-            android:paddingTop="16dp"
-            android:paddingRight="16dp"
-            android:layout_toEndOf="@+id/seekBarTemperature"
-            android:layout_alignTop="@+id/seekBarTemperature"
-            android:layout_weight="1" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="200dp"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:text="000 %"
-            android:id="@+id/textViewOverviewHumid"
-            android:gravity="center"
-            android:textSize="45dp"
-            android:typeface="serif"
-            android:paddingLeft="16dp"
-            android:paddingTop="16dp"
-            android:paddingRight="16dp"
-            android:layout_toStartOf="@+id/seekBarHumidity"
-            android:layout_alignTop="@+id/seekBarHumidity"
-            android:layout_alignEnd="@+id/textViewWateringDuration"
-            android:layout_above="@+id/textView1"
-            android:layout_weight="1" />
-    </LinearLayout>
-
+            <it.gmariotti.cardslib.library.view.CardView
+                android:id="@+id/cardView_OverviewWebView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_below="@+id/cardView_OverviewWaterLight"
+                android:layout_alignParentStart="true" />
+        </RelativeLayout>
+    </ScrollView>
 
 </RelativeLayout>
